@@ -1,0 +1,12 @@
+import {
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "mizchi/llm",
+  "mizchi/llm/openai",
+  "mizchi/llm/tools" @llm_tools,
+  "yourname/agent/agents",
+  "yourname/agent/tools",
+  "yourname/agent/memory",
+}
+
+pkgtype(kind: "executable")

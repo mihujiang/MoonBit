@@ -1,0 +1,9 @@
+import {
+  "moonbitlang/core/env",
+  "mizchi/llm",
+  "mizchi/llm/openai",
+  "yourname/agent/prompts",
+  "yourname/agent/chains",
+}
+
+pkgtype(kind: "executable")

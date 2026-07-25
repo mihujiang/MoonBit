@@ -1,0 +1,5 @@
+// import {
+//   "yourname/agent" @lib,
+// }
+
+pkgtype(kind: "executable")
