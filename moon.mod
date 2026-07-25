@@ -23,10 +23,8 @@ keywords = [ "ai", "agent", "llm", "langchain", "mcp", "react", "tool-calling" ]
 
 preferred_target = "native"
 
-description = "MoonBit version of LangChain core library — type-safe, composable, embeddable AI Agent framework. Depends on mizchi/llm for LLM clients and colmugx/mcp for MCP tool calling."
+description = "MoonBit version of LangChain core library — type-safe, composable, embeddable AI Agent framework. Depends on mizchi/llm for LLM clients."
 
 import {
-  "moonbitlang/async@0.20.3",
   "mizchi/llm@0.3.1",
-  "colmugx/mcp@0.14.0",
 }

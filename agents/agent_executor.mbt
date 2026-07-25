@@ -11,7 +11,7 @@
 pub struct AgentExecutor {
   provider : @llm.BoxedProvider
   tools : @llm_tools.ToolRegistry
-  memory : @memory.BufferMemory?
+  memory : @memory.BoxedMemory?
   max_steps : Int
 }
 
@@ -25,13 +25,13 @@ pub fn AgentExecutor::new(
 }
 
 ///|
-/// Attach a BufferMemory. History is loaded before invocation and
-/// the new user input + final assistant reply are saved after.
+/// Attach a Memory. Accepts any `Memory` implementation
+/// (BufferMemory, BufferWindowMemory, etc.).
 pub fn AgentExecutor::with_memory(
   self : AgentExecutor,
-  memory : @memory.BufferMemory,
+  memory : &@memory.Memory,
 ) -> AgentExecutor {
-  { ..self, memory: Some(memory) }
+  { ..self, memory: Some(@memory.BoxedMemory::new(memory)) }
 }
 
 ///|

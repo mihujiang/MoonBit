@@ -11,7 +11,7 @@
 pub struct LLMChain {
   provider : @llm.BoxedProvider
   prompt : @prompts.ChatPromptTemplate
-  memory : @memory.BufferMemory?
+  memory : @memory.BoxedMemory?
 }
 
 ///|
@@ -24,13 +24,14 @@ pub fn LLMChain::new(
 }
 
 ///|
-/// Attach a BufferMemory to the chain. History will be loaded before
-/// each invocation and saved after.
+/// Attach a Memory to the chain. Accepts any `Memory` implementation
+/// (BufferMemory, BufferWindowMemory, etc.). History will be loaded
+/// before each invocation and saved after.
 pub fn LLMChain::with_memory(
   self : LLMChain,
-  memory : @memory.BufferMemory,
+  memory : &@memory.Memory,
 ) -> LLMChain {
-  { ..self, memory: Some(memory) }
+  { ..self, memory: Some(@memory.BoxedMemory::new(memory)) }
 }
 
 ///|

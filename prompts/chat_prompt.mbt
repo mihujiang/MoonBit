@@ -3,32 +3,38 @@
 /// templates. This is moon-agent's equivalent of LangChain's
 /// `ChatPromptTemplate`.
 ///
+/// Templates are stored in a single ordered array, preserving insertion
+/// order at render time. This fixes two issues from the previous design:
+/// 1. Aliasing bug: `with_system` used structural update but `with_user`/
+///    `with_assistant` mutated in place, sharing array references.
+/// 2. Message ordering: all system → all user → all assistant was wrong
+///    for few-shot prompts that need user/assistant alternation.
+///
 /// Example:
 /// ```moonbit nocheck
 /// let p = ChatPromptTemplate::new()
 ///   |> ChatPromptTemplate::with_system("You are a helpful assistant.")
 ///   |> ChatPromptTemplate::with_user("Translate to {lang}: {text}")
 ///
-/// let msgs = p.render({ "lang": "Chinese", "text": "hello" })
+/// let msgs = p.render(Map([("lang", "Chinese"), ("text", "hello")]))
 /// ```
 pub struct ChatPromptTemplate {
-  system_template : String?
-  user_templates : Array[String]
-  assistant_templates : Array[String]
+  templates : Array[(@llm.Role, String)]
 }
 
 ///|
 pub fn ChatPromptTemplate::new() -> ChatPromptTemplate {
-  { system_template: None, user_templates: [], assistant_templates: [] }
+  { templates: [] }
 }
 
 ///|
-/// Set or replace the system message template.
+/// Append a system message template.
 pub fn ChatPromptTemplate::with_system(
   self : ChatPromptTemplate,
   template : String,
 ) -> ChatPromptTemplate {
-  { ..self, system_template: Some(template) }
+  self.templates.push((@llm.Role::System, template))
+  self
 }
 
 ///|
@@ -37,7 +43,7 @@ pub fn ChatPromptTemplate::with_user(
   self : ChatPromptTemplate,
   template : String,
 ) -> ChatPromptTemplate {
-  self.user_templates.push(template)
+  self.templates.push((@llm.Role::User, template))
   self
 }
 
@@ -47,35 +53,31 @@ pub fn ChatPromptTemplate::with_assistant(
   self : ChatPromptTemplate,
   template : String,
 ) -> ChatPromptTemplate {
-  self.assistant_templates.push(template)
+  self.templates.push((@llm.Role::Assistant, template))
   self
 }
 
 ///|
 /// Render all templates into a list of `@llm.Message` using `vars`.
 ///
-/// Templates are rendered in order: system (if any), then user/assistant
-/// templates in their insertion order. For accurate alternation control,
-/// use `with_message` instead.
+/// Templates are rendered in insertion order, so few-shot patterns like
+/// system → user → assistant → user → assistant work correctly.
 pub fn ChatPromptTemplate::render(
   self : ChatPromptTemplate,
   vars : Map[String, String],
 ) -> Array[@llm.Message] {
   let messages : Array[@llm.Message] = []
-  match self.system_template {
-    Some(tpl) => {
-      let pt = PromptTemplate::new(tpl)
-      messages.push(@llm.Message::system(pt.render(vars)))
+  for entry in self.templates {
+    let role = entry.0
+    let tpl = entry.1
+    let pt = PromptTemplate::new(tpl)
+    let text = pt.render(vars)
+    match role {
+      @llm.Role::System => messages.push(@llm.Message::system(text))
+      @llm.Role::User => messages.push(@llm.Message::user(text))
+      @llm.Role::Assistant => messages.push(@llm.Message::assistant(text))
+      _ => messages.push(@llm.Message::user(text))
     }
-    None => ()
-  }
-  for tpl in self.user_templates {
-    let pt = PromptTemplate::new(tpl)
-    messages.push(@llm.Message::user(pt.render(vars)))
-  }
-  for tpl in self.assistant_templates {
-    let pt = PromptTemplate::new(tpl)
-    messages.push(@llm.Message::assistant(pt.render(vars)))
   }
   messages
 }

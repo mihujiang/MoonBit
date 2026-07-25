@@ -1,7 +1,9 @@
 ///|
-/// Entry point for the CLI or runnable program in this template.
-/// Keep main focused; move logic into the library package.
+/// CLI entry point for moon-agent.
+/// Prints version information.
 /// Run with `moon run cmd/main` from the project root.
 fn main {
-  println("Hello")
+  println("moon-agent v" + @lib.version)
+  println("A type-safe, composable AI Agent framework for MoonBit")
+  println("https://github.com/weopqrst/MoonBit")
 }

@@ -14,14 +14,14 @@ pub fn BufferMemory::new() -> BufferMemory {
 }
 
 ///|
-impl Memory for BufferMemory with fn load_messages(self : BufferMemory) -> Array[
+pub impl Memory for BufferMemory with fn load_messages(self : BufferMemory) -> Array[
   @llm.Message,
 ] {
   self.messages
 }
 
 ///|
-impl Memory for BufferMemory with fn save_message(
+pub impl Memory for BufferMemory with fn save_message(
   self : BufferMemory,
   message : @llm.Message,
 ) -> Unit {
@@ -29,7 +29,7 @@ impl Memory for BufferMemory with fn save_message(
 }
 
 ///|
-impl Memory for BufferMemory with fn clear(self : BufferMemory) -> Unit {
+pub impl Memory for BufferMemory with fn clear(self : BufferMemory) -> Unit {
   self.messages.clear()
 }
 
@@ -55,12 +55,17 @@ pub fn BufferWindowMemory::new(k : Int) -> BufferWindowMemory {
 }
 
 ///|
-impl Memory for BufferWindowMemory with fn load_messages(
+pub impl Memory for BufferWindowMemory with fn load_messages(
   self : BufferWindowMemory,
 ) -> Array[@llm.Message] {
   let n = self.messages.length()
   if n <= self.k {
-    self.messages
+    // Return a copy to prevent callers from mutating internal state
+    let result : Array[@llm.Message] = []
+    for msg in self.messages {
+      result.push(msg)
+    }
+    result
   } else {
     let start = n - self.k
     let result : Array[@llm.Message] = []
@@ -72,7 +77,7 @@ impl Memory for BufferWindowMemory with fn load_messages(
 }
 
 ///|
-impl Memory for BufferWindowMemory with fn save_message(
+pub impl Memory for BufferWindowMemory with fn save_message(
   self : BufferWindowMemory,
   message : @llm.Message,
 ) -> Unit {
@@ -80,7 +85,7 @@ impl Memory for BufferWindowMemory with fn save_message(
 }
 
 ///|
-impl Memory for BufferWindowMemory with fn clear(self : BufferWindowMemory) -> Unit {
+pub impl Memory for BufferWindowMemory with fn clear(self : BufferWindowMemory) -> Unit {
   self.messages.clear()
 }
 

@@ -29,7 +29,7 @@ pub fn JsonOutputParser::new(schema_description : String) -> JsonOutputParser {
 }
 
 ///|
-impl OutputParser for JsonOutputParser with fn parse(
+pub impl OutputParser for JsonOutputParser with fn parse(
   self : JsonOutputParser,
   text : String,
 ) -> Result[Json, String] {
@@ -43,7 +43,7 @@ impl OutputParser for JsonOutputParser with fn parse(
 }
 
 ///|
-impl OutputParser for JsonOutputParser with fn format_instructions(
+pub impl OutputParser for JsonOutputParser with fn format_instructions(
   self : JsonOutputParser,
 ) -> String {
   "Respond with a single JSON object matching this schema:\n" +
@@ -68,6 +68,12 @@ pub fn strip_code_fence(text : String) -> String {
       Some(idx) => {
         let body_start = idx + 1
         let body = after_open[body_start:].to_owned()
+        // Strip leading \r (from Windows \r\n line endings)
+        let body = if body.has_prefix("\r") {
+          body[1:].to_owned()
+        } else {
+          body
+        }
         // Find the closing ``` in the body
         match body.find("```") {
           Some(end) => body[:end].trim().to_owned()

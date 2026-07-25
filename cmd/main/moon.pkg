@@ -1,5 +1,5 @@
-// import {
-//   "weopqrst/agent" @lib,
-// }
+import {
+  "weopqrst/agent" @lib,
+}
 
 pkgtype(kind: "executable")

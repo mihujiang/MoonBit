@@ -7,7 +7,7 @@
 /// This root package provides only metadata. Actual functionality lives in
 /// sub-packages:
 ///
-/// - `weopqrst/agent/core` — `Runnable[I, O]` trait, the unified composable interface
+/// - `weopqrst/agent/core` — `RunnableWrapper[I, O]` struct, the unified composable unit
 /// - `weopqrst/agent/prompts` — `PromptTemplate`, `ChatPromptTemplate`
 /// - `weopqrst/agent/parsers` — `OutputParser`, `JsonOutputParser`
 /// - `weopqrst/agent/memory` — `Memory`, `BufferMemory`, `BufferWindowMemory`
