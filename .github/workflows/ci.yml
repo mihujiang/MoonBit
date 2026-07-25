@@ -14,15 +14,18 @@ jobs:
       matrix:
         target: [native, wasm-gc, js]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Set up MoonBit
         run: |
-          curl -fsSL https://cli.moonbitlang.cn/install/unix.sh | bash
+          curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> $GITHUB_PATH
 
       - name: Verify moon version
         run: moon version --all
+
+      - name: Install dependencies
+        run: moon install
 
       - name: Check formatting
         run: moon fmt --check
