@@ -9,13 +9,13 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "MiHu agent"
+name = "weopqrst/agent"
 
 version = "0.1.0"
 
 readme = "README.mbt.md"
 
-repository = ""
+repository = "https://github.com/weopqrst/MoonBit"
 
 license = "Apache-2.0"
 

@@ -7,13 +7,13 @@
 /// This root package provides only metadata. Actual functionality lives in
 /// sub-packages:
 ///
-/// - `yourname/agent/core` — `Runnable[I, O]` trait, the unified composable interface
-/// - `yourname/agent/prompts` — `PromptTemplate`, `ChatPromptTemplate`
-/// - `yourname/agent/parsers` — `OutputParser`, `JsonOutputParser`
-/// - `yourname/agent/memory` — `Memory`, `BufferMemory`, `BufferWindowMemory`
-/// - `yourname/agent/tools` — `Tool` trait, bridge to mizchi/llm's ToolRegistry
-/// - `yourname/agent/chains` — `LLMChain`
-/// - `yourname/agent/agents` — `AgentExecutor`
+/// - `weopqrst/agent/core` — `Runnable[I, O]` trait, the unified composable interface
+/// - `weopqrst/agent/prompts` — `PromptTemplate`, `ChatPromptTemplate`
+/// - `weopqrst/agent/parsers` — `OutputParser`, `JsonOutputParser`
+/// - `weopqrst/agent/memory` — `Memory`, `BufferMemory`, `BufferWindowMemory`
+/// - `weopqrst/agent/tools` — `Tool` trait, bridge to mizchi/llm's ToolRegistry
+/// - `weopqrst/agent/chains` — `LLMChain`
+/// - `weopqrst/agent/agents` — `AgentExecutor`
 ///
 /// ## Quick start
 ///

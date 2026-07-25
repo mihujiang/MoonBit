@@ -1,5 +1,5 @@
 import {
   "mizchi/llm",
-  "yourname/agent/prompts",
-  "yourname/agent/memory",
+  "weopqrst/agent/prompts",
+  "weopqrst/agent/memory",
 }

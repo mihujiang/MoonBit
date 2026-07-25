@@ -1,5 +1,5 @@
 import {
   "mizchi/llm",
   "mizchi/llm/tools" @llm_tools,
-  "yourname/agent/memory",
+  "weopqrst/agent/memory",
 }
