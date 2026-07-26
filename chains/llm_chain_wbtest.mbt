@@ -138,3 +138,41 @@ test "LLMChain::invoke_and_parse returns Err on invalid JSON" {
   }
   assert_true(is_err)
 }
+
+///|
+test "LLMChain::invoke_stream calls on_delta for each chunk" {
+  let mock = TestMockProvider::new([
+    [
+      @llm.StreamEvent::TextDelta("Hello"),
+      @llm.StreamEvent::TextDelta(", "),
+      @llm.StreamEvent::TextDelta("world!"),
+    ],
+  ])
+  let prompt = @prompts.ChatPromptTemplate::new()
+    |> @prompts.ChatPromptTemplate::with_user("Say {word}")
+  let chain = LLMChain::new(@llm.BoxedProvider::new(mock), prompt)
+  let vars : Map[String, String] = Map([])
+  vars["word"] = "hi"
+  let chunks : Array[String] = []
+  let result = chain.invoke_stream(vars, fn(delta) { chunks.push(delta) })
+  assert_eq(result, "Hello, world!")
+  assert_eq(chunks.length(), 3)
+  assert_eq(chunks[0], "Hello")
+  assert_eq(chunks[1], ", ")
+  assert_eq(chunks[2], "world!")
+}
+
+///|
+test "LLMChain::invoke_stream returns full text with no deltas" {
+  let mock = TestMockProvider::new([[]])
+  let prompt = @prompts.ChatPromptTemplate::new()
+    |> @prompts.ChatPromptTemplate::with_user("test")
+  let chain = LLMChain::new(@llm.BoxedProvider::new(mock), prompt)
+  let vars : Map[String, String] = Map([])
+  let count : Ref[Int] = { val: 0 }
+  let result = chain.invoke_stream(vars, fn(_delta) {
+    count.val = count.val + 1
+  })
+  assert_eq(result, "")
+  assert_eq(count.val, 0)
+}

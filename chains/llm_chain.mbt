@@ -105,3 +105,64 @@ pub fn LLMChain::invoke_and_parse(
       )
   }
 }
+
+///|
+/// Run the chain with streaming, calling `on_delta` for each text chunk
+/// as it arrives from the model. Returns the full text after completion.
+///
+/// This is the streaming version of `invoke`. Memory is loaded and saved
+/// the same way (user input + full assistant text appended after the
+/// stream completes). The `on_delta` callback is invoked for every
+/// `TextDelta` event; other stream events are ignored.
+///
+/// Example:
+/// ```moonbit nocheck
+/// let result = chain.invoke_stream(vars, fn(delta) {
+///   print(delta) // stream to stdout as text arrives
+/// })
+/// ```
+pub fn LLMChain::invoke_stream(
+  self : LLMChain,
+  vars : Map[String, String],
+  on_delta : (String) -> Unit,
+) -> String {
+  let rendered = self.prompt.render(vars)
+  let messages : Array[@llm.Message] = []
+  match self.memory {
+    Some(m) =>
+      for msg in m.load_messages() {
+        messages.push(msg)
+      }
+    None => ()
+  }
+  for msg in rendered {
+    messages.push(msg)
+  }
+  let buf = StringBuilder::new()
+  let handler : @llm.StreamHandler = {
+    on_event: fn(event) {
+      match event {
+        @llm.StreamEvent::TextDelta(s) => {
+          buf.write_string(s)
+          on_delta(s)
+        }
+        _ => ()
+      }
+    },
+  }
+  self.provider.stream(messages, [], handler)
+  let result = buf.to_string()
+  match self.memory {
+    Some(m) => {
+      for msg in rendered {
+        match msg.role {
+          @llm.Role::User => m.save_message(msg)
+          _ => ()
+        }
+      }
+      m.save_message(@llm.Message::assistant(result))
+    }
+    None => ()
+  }
+  result
+}
