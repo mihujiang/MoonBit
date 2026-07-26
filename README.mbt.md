@@ -32,7 +32,7 @@ moon add weopqrst/agent@0.1.0
 
 ### 快速开始
 
-```moonbit
+```moonbit nocheck
 let prompt = ChatPromptTemplate::new()
   |> ChatPromptTemplate::with_system("You are a helpful assistant.")
   |> ChatPromptTemplate::with_user("What is {topic}?")
@@ -102,7 +102,7 @@ moon add weopqrst/agent@0.1.0
 
 ### Quickstart
 
-```moonbit
+```moonbit nocheck
 let prompt = ChatPromptTemplate::new()
   |> ChatPromptTemplate::with_system("You are a helpful assistant.")
   |> ChatPromptTemplate::with_user("What is {topic}?")

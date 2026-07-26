@@ -30,7 +30,7 @@ pub fn JsonOutputParser::new(schema_description : String) -> JsonOutputParser {
 
 ///|
 pub impl OutputParser for JsonOutputParser with fn parse(
-  self : JsonOutputParser,
+  _self : JsonOutputParser,
   text : String,
 ) -> Result[Json, String] {
   let trimmed = text.trim().to_owned()

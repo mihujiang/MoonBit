@@ -27,17 +27,17 @@ fn EchoTool::new(prefix : String) -> EchoTool {
 }
 
 ///|
-impl @tools.Tool for EchoTool with fn name(self : EchoTool) -> String {
+impl @tools.Tool for EchoTool with fn name(_self : EchoTool) -> String {
   "echo"
 }
 
 ///|
-impl @tools.Tool for EchoTool with fn description(self : EchoTool) -> String {
+impl @tools.Tool for EchoTool with fn description(_self : EchoTool) -> String {
   "Echo back the input message. Useful for testing tool calling."
 }
 
 ///|
-impl @tools.Tool for EchoTool with fn args_schema(self : EchoTool) -> Json {
+impl @tools.Tool for EchoTool with fn args_schema(_self : EchoTool) -> Json {
   let props : Map[String, Json] = Map([])
   props["message"] = Json::object(
     Map([
@@ -65,10 +65,6 @@ impl @tools.Tool for EchoTool with fn run(self : EchoTool, input : Json) -> Stri
   }
   self.prefix + msg
 }
-
-///|
-/// Attach `Tool` trait methods to `EchoTool` for dot-syntax calls.
-extend EchoTool with @tools.Tool::{name, description, args_schema, run}
 
 ///|
 fn main {
