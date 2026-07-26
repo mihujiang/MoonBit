@@ -2,4 +2,5 @@ import {
   "mizchi/llm",
   "mizchi/llm/tools" @llm_tools,
   "weopqrst/agent/memory",
+  "weopqrst/agent/parsers",
 }

@@ -78,3 +78,58 @@ test "AgentExecutor::invoke returns text without streaming" {
   let result = executor.invoke("hello")
   assert_eq(result, "agent response")
 }
+
+///|
+test "AgentExecutor::invoke_and_parse returns parsed Json" {
+  let mock = TestMockProvider::new([
+    [
+      @llm.StreamEvent::MessageStart,
+      @llm.StreamEvent::TextDelta("{\"status\": \"ok\"}"),
+      @llm.StreamEvent::MessageEnd(
+        finish_reason=@llm.FinishReason::Stop,
+        usage=None,
+      ),
+    ],
+  ])
+  let registry = @llm_tools.ToolRegistry::new()
+  let executor = AgentExecutor::new(@llm.BoxedProvider::new(mock), registry)
+    |> AgentExecutor::with_output_parser(
+      @parsers.JsonOutputParser::new("schema"),
+    )
+  let result = executor.invoke_and_parse("query")
+  let ok = match result {
+    Ok(json) =>
+      match json {
+        Json::Object(map) =>
+          match map.get("status") {
+            Some(Json::String(s)) => s == "ok"
+            _ => false
+          }
+        _ => false
+      }
+    Err(_) => false
+  }
+  assert_true(ok)
+}
+
+///|
+test "AgentExecutor::invoke_and_parse returns Err without parser" {
+  let mock = TestMockProvider::new([
+    [
+      @llm.StreamEvent::MessageStart,
+      @llm.StreamEvent::TextDelta("some text"),
+      @llm.StreamEvent::MessageEnd(
+        finish_reason=@llm.FinishReason::Stop,
+        usage=None,
+      ),
+    ],
+  ])
+  let registry = @llm_tools.ToolRegistry::new()
+  let executor = AgentExecutor::new(@llm.BoxedProvider::new(mock), registry)
+  let result = executor.invoke_and_parse("query")
+  let is_err = match result {
+    Ok(_) => false
+    Err(msg) => msg.contains("No output parser")
+  }
+  assert_true(is_err)
+}

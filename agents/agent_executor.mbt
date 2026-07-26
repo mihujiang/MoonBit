@@ -12,6 +12,7 @@ pub struct AgentExecutor {
   provider : @llm.BoxedProvider
   tools : @llm_tools.ToolRegistry
   memory : @memory.BoxedMemory?
+  output_parser : @parsers.BoxedOutputParser?
   max_steps : Int
 }
 
@@ -21,7 +22,7 @@ pub fn AgentExecutor::new(
   provider : @llm.BoxedProvider,
   tools : @llm_tools.ToolRegistry,
 ) -> AgentExecutor {
-  { provider, tools, memory: None, max_steps: 10 }
+  { provider, tools, memory: None, output_parser: None, max_steps: 10 }
 }
 
 ///|
@@ -41,6 +42,16 @@ pub fn AgentExecutor::with_max_steps(
   max_steps : Int,
 ) -> AgentExecutor {
   { ..self, max_steps, }
+}
+
+///|
+/// Attach an OutputParser to the executor. Use `invoke_and_parse` to
+/// get the parsed result; `invoke` still returns raw text.
+pub fn AgentExecutor::with_output_parser(
+  self : AgentExecutor,
+  parser : &@parsers.OutputParser,
+) -> AgentExecutor {
+  { ..self, output_parser: Some(@parsers.BoxedOutputParser::new(parser)) }
 }
 
 ///|
@@ -156,4 +167,23 @@ pub fn AgentExecutor::invoke_stream(
     None => ()
   }
   final_text
+}
+
+///|
+/// Run the agent and parse the result with the attached OutputParser.
+///
+/// Calls `invoke` to get the raw text, then parses it. Returns `Err`
+/// if no parser is attached or parsing fails.
+pub fn AgentExecutor::invoke_and_parse(
+  self : AgentExecutor,
+  input : String,
+) -> Result[Json, String] {
+  let text = self.invoke(input)
+  match self.output_parser {
+    Some(p) => p.parse(text)
+    None =>
+      Err(
+        "No output parser configured. Use AgentExecutor::with_output_parser to set one.",
+      )
+  }
 }
