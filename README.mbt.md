@@ -5,7 +5,7 @@
 [![CI](https://github.com/weopqrst/MoonBit/actions/workflows/ci.yml/badge.svg)](https://github.com/weopqrst/MoonBit/actions)
 [![mooncakes](https://img.shields.io/badge/mooncakes-weopqrst%2Fagent-blue)](https://mooncakes.io/docs/weopqrst/agent)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.1.0-blue)](https://github.com/weopqrst/MoonBit/releases/tag/v0.1.0)
+[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/weopqrst/MoonBit/releases/tag/v0.2.0)
 
 ---
 
