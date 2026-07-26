@@ -166,3 +166,23 @@ pub fn LLMChain::invoke_stream(
   }
   result
 }
+
+///|
+/// Convert this LLMChain into a `RunnableWrapper[Map[String, String], String]`,
+/// enabling LCEL-style composition with other RunnableWrappers via `pipe`.
+///
+/// Example:
+/// ```moonbit nocheck
+/// let chain = LLMChain::new(provider, prompt).as_runnable()
+/// let post = RunnableWrapper::new(fn(s : String) -> String { s })
+/// let composed = chain.pipe(post)
+/// composed.invoke(vars)
+/// ```
+pub fn LLMChain::as_runnable(
+  self : LLMChain,
+) -> @core.RunnableWrapper[Map[String, String], String] {
+  let chain = self
+  @core.RunnableWrapper::new(fn(vars : Map[String, String]) -> String {
+    chain.invoke(vars)
+  })
+}

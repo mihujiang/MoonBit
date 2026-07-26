@@ -176,3 +176,21 @@ test "LLMChain::invoke_stream returns full text with no deltas" {
   assert_eq(result, "")
   assert_eq(count.val, 0)
 }
+
+///|
+test "LLMChain::as_runnable composes with pipe" {
+  let mock = TestMockProvider::new([
+    [@llm.StreamEvent::TextDelta("hello world")],
+  ])
+  let prompt = @prompts.ChatPromptTemplate::new()
+    |> @prompts.ChatPromptTemplate::with_user("Say {word}")
+  let chain = LLMChain::new(@llm.BoxedProvider::new(mock), prompt)
+  // Convert to RunnableWrapper and pipe with a post-processing step
+  let runnable = chain.as_runnable()
+  let len = @core.RunnableWrapper::new(fn(s : String) -> Int { s.length() })
+  let composed = runnable.pipe(len)
+  let vars : Map[String, String] = Map([])
+  vars["word"] = "hi"
+  let result = composed.invoke(vars)
+  assert_eq(result, 11) // "hello world" has length 11
+}

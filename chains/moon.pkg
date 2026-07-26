@@ -3,4 +3,5 @@ import {
   "weopqrst/agent/prompts",
   "weopqrst/agent/memory",
   "weopqrst/agent/parsers",
+  "weopqrst/agent/core",
 }
