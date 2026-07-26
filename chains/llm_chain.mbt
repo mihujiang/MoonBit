@@ -12,6 +12,7 @@ pub struct LLMChain {
   provider : @llm.BoxedProvider
   prompt : @prompts.ChatPromptTemplate
   memory : @memory.BoxedMemory?
+  output_parser : @parsers.BoxedOutputParser?
 }
 
 ///|
@@ -20,7 +21,7 @@ pub fn LLMChain::new(
   provider : @llm.BoxedProvider,
   prompt : @prompts.ChatPromptTemplate,
 ) -> LLMChain {
-  { provider, prompt, memory: None }
+  { provider, prompt, memory: None, output_parser: None }
 }
 
 ///|
@@ -32,6 +33,17 @@ pub fn LLMChain::with_memory(
   memory : &@memory.Memory,
 ) -> LLMChain {
   { ..self, memory: Some(@memory.BoxedMemory::new(memory)) }
+}
+
+///|
+/// Attach an OutputParser to the chain. Accepts any `OutputParser`
+/// implementation (JsonOutputParser, etc.). Use `invoke_and_parse` to
+/// get the parsed result; `invoke` still returns raw text.
+pub fn LLMChain::with_output_parser(
+  self : LLMChain,
+  parser : &@parsers.OutputParser,
+) -> LLMChain {
+  { ..self, output_parser: Some(@parsers.BoxedOutputParser::new(parser)) }
 }
 
 ///|
@@ -69,4 +81,27 @@ pub fn LLMChain::invoke(self : LLMChain, vars : Map[String, String]) -> String {
     None => ()
   }
   result
+}
+
+///|
+/// Run the chain and parse the result with the attached OutputParser.
+///
+/// Calls `invoke` to get the raw text, then parses it with the
+/// configured `output_parser`. Returns `Err` if no parser is attached
+/// or parsing fails.
+///
+/// The parser's `format_instructions` are NOT auto-injected into the
+/// prompt; include them manually if needed (e.g. as a system message).
+pub fn LLMChain::invoke_and_parse(
+  self : LLMChain,
+  vars : Map[String, String],
+) -> Result[Json, String] {
+  let text = self.invoke(vars)
+  match self.output_parser {
+    Some(p) => p.parse(text)
+    None =>
+      Err(
+        "No output parser configured. Use LLMChain::with_output_parser to set one.",
+      )
+  }
 }

@@ -2,4 +2,5 @@ import {
   "mizchi/llm",
   "weopqrst/agent/prompts",
   "weopqrst/agent/memory",
+  "weopqrst/agent/parsers",
 }
