@@ -95,3 +95,65 @@ pub fn AgentExecutor::invoke(self : AgentExecutor, input : String) -> String {
   }
   final_text
 }
+
+///|
+/// Run the agent with streaming, calling `on_delta` for each text chunk
+/// as it arrives from the model. Returns the full text after completion.
+///
+/// This is the streaming version of `invoke`. Memory is loaded and saved
+/// the same way. The `on_delta` callback is invoked for every
+/// `TextDelta` event; tool call events and other stream events are
+/// handled internally by `run_agent` and not exposed.
+///
+/// Example:
+/// ```moonbit nocheck
+/// let result = executor.invoke_stream("What's the weather?", fn(delta) {
+///   print(delta) // stream to stdout as text arrives
+/// })
+/// ```
+pub fn AgentExecutor::invoke_stream(
+  self : AgentExecutor,
+  input : String,
+  on_delta : (String) -> Unit,
+) -> String {
+  let messages : Array[@llm.Message] = []
+  match self.memory {
+    Some(m) =>
+      for msg in m.load_messages() {
+        messages.push(msg)
+      }
+    None => ()
+  }
+  let user_msg = @llm.Message::user(input)
+  messages.push(user_msg)
+  let mut final_text = ""
+  @llm.run_agent(
+    self.provider,
+    self.tools,
+    messages,
+    @llm.StopCondition::MaxSteps(self.max_steps),
+    fn(event : @llm.AgentEvent) -> Unit {
+      match event {
+        @llm.AgentEvent::Stream(e) =>
+          match e {
+            @llm.StreamEvent::TextDelta(s) => {
+              final_text = final_text + s
+              on_delta(s)
+            }
+            _ => ()
+          }
+        _ => ()
+      }
+    },
+  )
+  match self.memory {
+    Some(m) => {
+      m.save_message(user_msg)
+      if final_text != "" {
+        m.save_message(@llm.Message::assistant(final_text))
+      }
+    }
+    None => ()
+  }
+  final_text
+}
