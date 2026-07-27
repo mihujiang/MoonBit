@@ -4,3 +4,13 @@ target/
 target
 .mooncakes/
 .moonagent/
+*.pdb
+*.ilk
+*.exe
+*.obj
+*.dll
+*.exp
+*.lib
+*.log
+.vscode/
+.idea/

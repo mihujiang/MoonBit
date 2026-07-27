@@ -1,7 +1,7 @@
 import {
   "mizchi/llm",
-  "weopqrst/agent/prompts",
-  "weopqrst/agent/memory",
-  "weopqrst/agent/parsers",
-  "weopqrst/agent/core",
+  "mihujiang/agent/prompts",
+  "mihujiang/agent/memory",
+  "mihujiang/agent/parsers",
+  "mihujiang/agent/core",
 }

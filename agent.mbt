@@ -2,18 +2,18 @@
 /// moon-agent: MoonBit version of LangChain core library.
 ///
 /// A type-safe, composable, embeddable AI Agent framework built on top of
-/// `mizchi/llm` (LLM clients) and `colmugx/mcp` (MCP tool calling).
+/// `mizchi/llm` (LLM clients).
 ///
 /// This root package provides only metadata. Actual functionality lives in
 /// sub-packages:
 ///
-/// - `weopqrst/agent/core` — `RunnableWrapper[I, O]` struct, the unified composable unit
-/// - `weopqrst/agent/prompts` — `PromptTemplate`, `ChatPromptTemplate`
-/// - `weopqrst/agent/parsers` — `OutputParser`, `JsonOutputParser`
-/// - `weopqrst/agent/memory` — `Memory`, `BufferMemory`, `BufferWindowMemory`
-/// - `weopqrst/agent/tools` — `Tool` trait, bridge to mizchi/llm's ToolRegistry
-/// - `weopqrst/agent/chains` — `LLMChain`
-/// - `weopqrst/agent/agents` — `AgentExecutor`
+/// - `mihujiang/agent/core` — `RunnableWrapper[I, O]` struct, the unified composable unit
+/// - `mihujiang/agent/prompts` — `PromptTemplate`, `ChatPromptTemplate`
+/// - `mihujiang/agent/parsers` — `OutputParser`, `JsonOutputParser`
+/// - `mihujiang/agent/memory` — `Memory`, `BufferMemory`, `BufferWindowMemory`, `SummaryMemory`
+/// - `mihujiang/agent/tools` — `Tool` trait, bridge to mizchi/llm's ToolRegistry
+/// - `mihujiang/agent/chains` — `LLMChain`
+/// - `mihujiang/agent/agents` — `AgentExecutor`
 ///
 /// ## Quick start
 ///
@@ -22,9 +22,11 @@
 ///   |> @prompts.ChatPromptTemplate::with_system("You are a helpful assistant.")
 ///   |> @prompts.ChatPromptTemplate::with_user("What is {topic}?")
 ///
-/// let chain = @chains.LLMChain::new(model.boxed(), prompt)
+/// let chain = @chains.LLMChain::new(provider, prompt)
 ///
-/// let result = chain.invoke({ "topic": "MoonBit" })
+/// let vars : Map[String, String] = Map([])
+/// vars["topic"] = "MoonBit"
+/// let result = chain.invoke(vars)
 /// ```
 ///
 /// ## License

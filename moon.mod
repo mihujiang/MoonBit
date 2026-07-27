@@ -9,17 +9,28 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "weopqrst/agent"
+name = "mihujiang/agent"
 
 version = "0.2.0"
 
 readme = "README.mbt.md"
 
-repository = "https://github.com/weopqrst/MoonBit"
+repository = "https://github.com/mihujiang/MoonBit"
 
 license = "Apache-2.0"
 
-keywords = [ "ai", "agent", "llm", "langchain", "mcp", "react", "tool-calling" ]
+keywords = [
+  "ai",
+  "agent",
+  "llm",
+  "langchain",
+  "react",
+  "tool-calling",
+  "memory",
+  "prompt",
+  "parser",
+  "chain",
+]
 
 preferred_target = "native"
 
