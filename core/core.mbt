@@ -58,3 +58,71 @@ pub fn[I, O, O2] RunnableWrapper::map(
   let prev = self
   RunnableWrapper::new(fn(input : I) -> O2 { f(prev.invoke(input)) })
 }
+
+///|
+/// SequentialChain runs a list of `RunnableWrapper[T, T]` in sequence,
+/// feeding the output of each step as input to the next.
+///
+/// This is moon-agent's equivalent of LangChain's `SequentialChain`. It
+/// requires every step to share the same input/output type `T` so the
+/// chain is type-homogeneous end-to-end. For heterogeneous chains, use
+/// `RunnableWrapper::pipe` directly to compose step by step with full
+/// type information at each boundary.
+///
+/// Construction uses `SequentialChain::new` with a non-empty array. An
+/// empty array is a programmer error and aborts at construction time
+/// (consistent with how MoonBit's `Array::first` etc. treat empty).
+///
+/// Example:
+/// ```moonbit nocheck
+/// let step1 = RunnableWrapper::new(fn(s : String) -> String { s + "!" })
+/// let step2 = RunnableWrapper::new(fn(s : String) -> String { "(" + s + ")" })
+/// let chain = SequentialChain::new([step1, step2])
+/// chain.invoke("hi") // -> "(hi!)"
+/// ```
+pub struct SequentialChain[T] {
+  steps : Array[RunnableWrapper[T, T]]
+}
+
+///|
+/// Build a SequentialChain from a non-empty list of homogeneous steps.
+/// Each step must have matching input and output type `T`.
+///
+/// Aborts if `steps` is empty — a chain with zero steps has no defined
+/// output and is almost certainly a bug at the call site.
+pub fn[T] SequentialChain::new(
+  steps : Array[RunnableWrapper[T, T]],
+) -> SequentialChain[T] {
+  if steps.is_empty() {
+    abort("SequentialChain::new requires a non-empty array of steps")
+  }
+  { steps, }
+}
+
+///|
+/// Run the chain: feed `input` to the first step, then pipe the output
+/// of each step into the next. Returns the final step's output.
+pub fn[T] SequentialChain::invoke(self : SequentialChain[T], input : T) -> T {
+  let mut current = input
+  for step in self.steps {
+    current = step.invoke(current)
+  }
+  current
+}
+
+///|
+/// Convert this SequentialChain into a single `RunnableWrapper[T, T]`,
+/// enabling further composition (e.g. piping into another chain or
+/// wrapper).
+pub fn[T] SequentialChain::as_runnable(
+  self : SequentialChain[T],
+) -> RunnableWrapper[T, T] {
+  let chain = self
+  RunnableWrapper::new(fn(input : T) -> T { chain.invoke(input) })
+}
+
+///|
+/// Number of steps in the chain.
+pub fn[T] SequentialChain::length(self : SequentialChain[T]) -> Int {
+  self.steps.length()
+}

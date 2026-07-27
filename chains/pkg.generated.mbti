@@ -1,0 +1,34 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/chains"
+
+import {
+  "mizchi/llm",
+  "weopqrst/agent/core",
+  "weopqrst/agent/memory",
+  "weopqrst/agent/parsers",
+  "weopqrst/agent/prompts",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct LLMChain {
+  provider : @llm.BoxedProvider
+  prompt : @prompts.ChatPromptTemplate
+  memory : @memory.BoxedMemory?
+  output_parser : @parsers.BoxedOutputParser?
+}
+pub fn LLMChain::as_runnable(Self) -> @core.RunnableWrapper[Map[String, String], String]
+pub fn LLMChain::invoke(Self, Map[String, String]) -> String
+pub fn LLMChain::invoke_and_parse(Self, Map[String, String]) -> Result[Json, String]
+pub fn LLMChain::invoke_stream(Self, Map[String, String], (String) -> Unit) -> String
+pub fn LLMChain::new(@llm.BoxedProvider, @prompts.ChatPromptTemplate) -> Self
+pub fn LLMChain::with_memory(Self, &@memory.Memory) -> Self
+pub fn LLMChain::with_output_parser(Self, &@parsers.OutputParser) -> Self
+
+// Type aliases
+
+// Traits
+

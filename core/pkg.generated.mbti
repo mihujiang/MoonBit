@@ -1,0 +1,28 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/core"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct RunnableWrapper[I, O] {
+  run : (I) -> O
+}
+pub fn[I, O] RunnableWrapper::invoke(Self[I, O], I) -> O
+pub fn[I, O, O2] RunnableWrapper::map(Self[I, O], (O) -> O2) -> Self[I, O2]
+pub fn[I, O] RunnableWrapper::new((I) -> O) -> Self[I, O]
+pub fn[I, O, O2] RunnableWrapper::pipe(Self[I, O], Self[O, O2]) -> Self[I, O2]
+
+pub struct SequentialChain[T] {
+  steps : Array[RunnableWrapper[T, T]]
+}
+pub fn[T] SequentialChain::as_runnable(Self[T]) -> RunnableWrapper[T, T]
+pub fn[T] SequentialChain::invoke(Self[T], T) -> T
+pub fn[T] SequentialChain::length(Self[T]) -> Int
+pub fn[T] SequentialChain::new(Array[RunnableWrapper[T, T]]) -> Self[T]
+
+// Type aliases
+
+// Traits
+

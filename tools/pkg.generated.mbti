@@ -1,0 +1,22 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/tools"
+
+// Values
+pub fn[T : Tool] register_into(@mizchi/llm/tools.ToolRegistry, T) -> Unit
+
+pub fn[T : Tool] to_tool_def(T) -> @mizchi/llm/tools.ToolDef
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits
+pub(open) trait Tool {
+  fn name(Self) -> String
+  fn description(Self) -> String
+  fn args_schema(Self) -> Json
+  fn run(Self, Json) -> String
+}
+

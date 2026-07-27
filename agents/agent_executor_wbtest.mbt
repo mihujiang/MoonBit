@@ -3,6 +3,7 @@
 ///
 /// We define TestMockProvider locally because mizchi/llm's MockProvider
 /// has a non-`pub` impl (same issue as chains/llm_chain_wbtest.mbt).
+/// Tests cover invoke, invoke_stream, invoke_and_parse.
 
 ///|
 struct TestMockProvider {

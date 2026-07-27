@@ -1,0 +1,34 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/agents"
+
+import {
+  "mizchi/llm",
+  "mizchi/llm/tools",
+  "weopqrst/agent/memory",
+  "weopqrst/agent/parsers",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct AgentExecutor {
+  provider : @llm.BoxedProvider
+  tools : @tools.ToolRegistry
+  memory : @memory.BoxedMemory?
+  output_parser : @parsers.BoxedOutputParser?
+  max_steps : Int
+}
+pub fn AgentExecutor::invoke(Self, String) -> String
+pub fn AgentExecutor::invoke_and_parse(Self, String) -> Result[Json, String]
+pub fn AgentExecutor::invoke_stream(Self, String, (String) -> Unit) -> String
+pub fn AgentExecutor::new(@llm.BoxedProvider, @tools.ToolRegistry) -> Self
+pub fn AgentExecutor::with_max_steps(Self, Int) -> Self
+pub fn AgentExecutor::with_memory(Self, &@memory.Memory) -> Self
+pub fn AgentExecutor::with_output_parser(Self, &@parsers.OutputParser) -> Self
+
+// Type aliases
+
+// Traits
+

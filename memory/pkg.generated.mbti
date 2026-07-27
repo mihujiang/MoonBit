@@ -1,0 +1,61 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/memory"
+
+import {
+  "mizchi/llm",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct BoxedMemory {
+  inner : &Memory
+}
+pub fn BoxedMemory::clear(Self) -> Unit
+pub fn BoxedMemory::load_messages(Self) -> Array[@llm.Message]
+pub fn BoxedMemory::new(&Memory) -> Self
+pub fn BoxedMemory::save_message(Self, @llm.Message) -> Unit
+pub impl Memory for BoxedMemory
+
+pub struct BufferMemory {
+  messages : Array[@llm.Message]
+}
+pub fn BufferMemory::clear(Self) -> Unit
+pub fn BufferMemory::load_messages(Self) -> Array[@llm.Message]
+pub fn BufferMemory::new() -> Self
+pub fn BufferMemory::save_message(Self, @llm.Message) -> Unit
+pub impl Memory for BufferMemory
+
+pub struct BufferWindowMemory {
+  messages : Array[@llm.Message]
+  k : Int
+}
+pub fn BufferWindowMemory::clear(Self) -> Unit
+pub fn BufferWindowMemory::load_messages(Self) -> Array[@llm.Message]
+pub fn BufferWindowMemory::new(Int) -> Self
+pub fn BufferWindowMemory::save_message(Self, @llm.Message) -> Unit
+pub impl Memory for BufferWindowMemory
+
+pub struct SummaryMemory {
+  provider : @llm.BoxedProvider
+  summary_cell : Array[String]
+  pending : Array[@llm.Message]
+  max_pending : Int
+}
+pub fn SummaryMemory::clear(Self) -> Unit
+pub fn SummaryMemory::load_messages(Self) -> Array[@llm.Message]
+pub fn SummaryMemory::new(@llm.BoxedProvider, Int) -> Self
+pub fn SummaryMemory::save_message(Self, @llm.Message) -> Unit
+pub impl Memory for SummaryMemory
+
+// Type aliases
+
+// Traits
+pub(open) trait Memory {
+  fn load_messages(Self) -> Array[@llm.Message]
+  fn save_message(Self, @llm.Message) -> Unit
+  fn clear(Self) -> Unit
+}
+

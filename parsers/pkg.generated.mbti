@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/parsers"
+
+// Values
+pub fn strip_code_fence(String) -> String
+
+// Errors
+
+// Types and methods
+pub struct BoxedOutputParser {
+  inner : &OutputParser
+}
+pub fn BoxedOutputParser::format_instructions(Self) -> String
+pub fn BoxedOutputParser::new(&OutputParser) -> Self
+pub fn BoxedOutputParser::parse(Self, String) -> Result[Json, String]
+pub impl OutputParser for BoxedOutputParser
+
+pub struct JsonOutputParser {
+  schema_description : String
+}
+pub fn JsonOutputParser::format_instructions(Self) -> String
+pub fn JsonOutputParser::new(String) -> Self
+pub fn JsonOutputParser::parse(Self, String) -> Result[Json, String]
+pub impl OutputParser for JsonOutputParser
+
+// Type aliases
+
+// Traits
+pub(open) trait OutputParser {
+  fn parse(Self, String) -> Result[Json, String]
+  fn format_instructions(Self) -> String
+}
+

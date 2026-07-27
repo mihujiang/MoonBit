@@ -1,0 +1,33 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/prompts"
+
+import {
+  "mizchi/llm",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct ChatPromptTemplate {
+  templates : Array[(@llm.Role, String)]
+}
+pub fn ChatPromptTemplate::new() -> Self
+pub fn ChatPromptTemplate::render(Self, Map[String, String]) -> Array[@llm.Message]
+pub fn ChatPromptTemplate::with_assistant(Self, String) -> Self
+pub fn ChatPromptTemplate::with_system(Self, String) -> Self
+pub fn ChatPromptTemplate::with_user(Self, String) -> Self
+
+pub struct PromptTemplate {
+  template : String
+}
+pub fn PromptTemplate::new(String) -> Self
+pub fn PromptTemplate::render(Self, Map[String, String]) -> String
+pub fn PromptTemplate::render_one(Self, String, String) -> String
+pub fn PromptTemplate::variables(Self) -> Array[String]
+
+// Type aliases
+
+// Traits
+
