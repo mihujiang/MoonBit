@@ -14,6 +14,8 @@
 /// - `mihujiang/agent/tools` — `Tool` trait, bridge to mizchi/llm's ToolRegistry
 /// - `mihujiang/agent/chains` — `LLMChain`
 /// - `mihujiang/agent/agents` — `AgentExecutor`
+/// - `mihujiang/agent/config` — `ChatConfig`, unified config loader (config.json or env vars)
+/// - `mihujiang/agent/mcp` — MCP Client/Server for ecosystem interop
 ///
 /// ## Quick start
 ///
@@ -29,7 +31,12 @@
 /// let result = chain.invoke(vars)
 /// ```
 ///
+/// ## Configuration
+///
+/// Executables can load API settings via `config.json` at project root
+/// or environment variables. See `@config.load_config()`.
+///
 /// ## License
 ///
 /// Apache-2.0
-pub let version : String = "0.6.0"
+pub let version : String = "0.9.0"

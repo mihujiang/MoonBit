@@ -1,0 +1,12 @@
+import {
+  "moonbitlang/core/json",
+  "moonbitlang/core/env",
+}
+
+options(
+  targets: {
+    "config_js.mbt": [ "js" ],
+    "config_native.mbt": [ "native" ],
+    "config_wasm.mbt": [ "wasm", "wasm-gc" ],
+  },
+)

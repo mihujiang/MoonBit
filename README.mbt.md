@@ -5,7 +5,7 @@
 [![CI](https://github.com/mihujiang/MoonBit/actions/workflows/ci.yml/badge.svg)](https://github.com/mihujiang/MoonBit/actions)
 [![mooncakes](https://img.shields.io/badge/mooncakes-mihujiang%2Fagent-blue)](https://mooncakes.io/docs/mihujiang/agent)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.6.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.6.0)
+[![Version](https://img.shields.io/badge/version-0.9.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.9.0)
 
 ---
 
@@ -63,16 +63,37 @@
 ### 安装
 
 ```bash
-moon add mihujiang/agent@0.6.0
+moon add mihujiang/agent@0.9.0
 ```
 
 这会在 `moon.mod` 中添加：
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "mihujiang/agent@0.6.0",
+  "mihujiang/agent@0.9.0",
 }
 ```
+
+### 配置（v0.9 新增）
+
+在项目根目录创建 `config.json`（参考 `config.example.json`）：
+
+```json
+{
+  "api_key": "sk-...",
+  "base_url": "https://api.deepseek.com",
+  "model": "deepseek-chat",
+  "max_tokens": 4096,
+  "system_prompt": ""
+}
+```
+
+或使用环境变量：`OPENAI_API_KEY`、`OPENAI_BASE_URL`（可选）、`OPENAI_MODEL`（可选）。
+
+`@config.load_config()` 按以下顺序查找：
+1. `./config.json`
+2. `../config.json`（子目录如 `cmd/chat` 运行时）
+3. 环境变量回退
 
 ### 快速开始（5 分钟）
 

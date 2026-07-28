@@ -1,0 +1,7 @@
+{
+  "api_key": "sk-your-api-key-here",
+  "base_url": "https://api.deepseek.com",
+  "model": "deepseek-chat",
+  "max_tokens": 4096,
+  "system_prompt": ""
+}
