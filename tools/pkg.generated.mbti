@@ -25,6 +25,30 @@ pub struct DateTimeTool {
 pub fn DateTimeTool::new() -> Self
 pub impl Tool for DateTimeTool
 
+type FileReadTool
+pub fn FileReadTool::args_schema(Self) -> Json
+pub fn FileReadTool::description(Self) -> String
+pub fn FileReadTool::name(Self) -> String
+pub fn FileReadTool::new((String) -> String) -> Self
+pub fn FileReadTool::run(Self, Json) -> String
+pub impl Tool for FileReadTool
+
+type FileWriteTool
+pub fn FileWriteTool::args_schema(Self) -> Json
+pub fn FileWriteTool::description(Self) -> String
+pub fn FileWriteTool::name(Self) -> String
+pub fn FileWriteTool::new((String, String) -> String) -> Self
+pub fn FileWriteTool::run(Self, Json) -> String
+pub impl Tool for FileWriteTool
+
+type HttpTool
+pub fn HttpTool::args_schema(Self) -> Json
+pub fn HttpTool::description(Self) -> String
+pub fn HttpTool::name(Self) -> String
+pub fn HttpTool::new((String, String, String, String) -> String) -> Self
+pub fn HttpTool::run(Self, Json) -> String
+pub impl Tool for HttpTool
+
 // Type aliases
 
 // Traits
