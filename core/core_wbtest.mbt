@@ -1,5 +1,5 @@
 ///|
-/// Whitebox tests for RunnableWrapper composition (pipe, map).
+/// Whitebox tests for RunnableWrapper composition and RouterChain.
 
 ///|
 test "RunnableWrapper::invoke calls the wrapped function" {
@@ -87,4 +87,97 @@ test "SequentialChain::as_runnable composes with another wrapper" {
   let composed = chain.as_runnable().pipe(post)
   // "hi" -> "hi!" -> "(hi!)" -> "[(hi!)]"
   assert_eq(composed.invoke("hi"), "[(hi!)]")
+}
+
+///|
+/// Whitebox tests for RouterChain.
+
+///|
+test "RouterChain::invoke routes to matching handler" {
+  let math = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "math result"
+  })
+  let default = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "default"
+  })
+  let router = RouterChain::new(
+      fn(input) { if input.contains("math") { "math" } else { "" } },
+      default,
+    )
+    |> RouterChain::add_route("math", math)
+  let vars : Map[String, String] = Map([])
+  vars["input"] = "do some math please"
+  assert_eq(router.invoke(vars), "math result")
+}
+
+///|
+test "RouterChain::invoke falls back to default" {
+  let math = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "math"
+  })
+  let default = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "fallback"
+  })
+  let router = RouterChain::new(
+      fn(input) { if input.contains("calc") { "math" } else { "" } },
+      default,
+    )
+    |> RouterChain::add_route("math", math)
+  let vars : Map[String, String] = Map([])
+  vars["input"] = "hello"
+  assert_eq(router.invoke(vars), "fallback")
+}
+
+///|
+test "RouterChain::add_route adds new routes" {
+  let math = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "m"
+  })
+  let chat = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "c"
+  })
+  let default = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "d"
+  })
+  let router = RouterChain::new(fn(_input) { "chat" }, default)
+    |> RouterChain::add_route("math", math)
+    |> RouterChain::add_route("chat", chat)
+  assert_eq(router.route_count(), 2)
+  let vars : Map[String, String] = Map([])
+  assert_eq(router.invoke(vars), "c")
+}
+
+///|
+test "RouterChain::as_runnable works with pipe" {
+  let greet = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "Hello!"
+  })
+  let exit = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "Bye!"
+  })
+  let router = RouterChain::new(
+      fn(input) { if input.contains("bye") { "exit" } else { "" } },
+      greet,
+    )
+    |> RouterChain::add_route("exit", exit)
+  let post = RunnableWrapper::new(fn(s : String) -> String { "[" + s + "]" })
+  let composed = router.as_runnable().pipe(post)
+  let vars : Map[String, String] = Map([])
+  vars["input"] = "say goodbye"
+  assert_eq(composed.invoke(vars), "[Bye!]")
+}
+
+///|
+test "RouterChain::route_count returns correct count" {
+  let a = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String { "a" })
+  let b = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String { "b" })
+  let c = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String { "c" })
+  let default = RunnableWrapper::new(fn(_vars : Map[String, String]) -> String {
+    "d"
+  })
+  let router = RouterChain::new(fn(_input) { "" }, default)
+    |> RouterChain::add_route("a", a)
+    |> RouterChain::add_route("b", b)
+    |> RouterChain::add_route("c", c)
+  assert_eq(router.route_count(), 3)
 }

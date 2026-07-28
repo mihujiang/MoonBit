@@ -6,6 +6,17 @@ package "mihujiang/agent/core"
 // Errors
 
 // Types and methods
+pub struct RouterChain {
+  decide : (String) -> String
+  routes : Map[String, RunnableWrapper[Map[String, String], String]]
+  default : RunnableWrapper[Map[String, String], String]
+}
+pub fn RouterChain::add_route(Self, String, RunnableWrapper[Map[String, String], String]) -> Self
+pub fn RouterChain::as_runnable(Self) -> RunnableWrapper[Map[String, String], String]
+pub fn RouterChain::invoke(Self, Map[String, String]) -> String
+pub fn RouterChain::new((String) -> String, RunnableWrapper[Map[String, String], String]) -> Self
+pub fn RouterChain::route_count(Self) -> Int
+
 pub struct RunnableWrapper[I, O] {
   run : (I) -> O
 }

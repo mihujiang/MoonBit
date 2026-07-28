@@ -134,7 +134,7 @@ test "LLMChain::invoke_and_parse returns Err on invalid JSON" {
   let result = chain.invoke_and_parse(vars)
   let is_err = match result {
     Ok(_) => false
-    Err(msg) => msg.contains("Failed to parse JSON")
+    Err(msg) => msg.contains("LLMChain output parsing")
   }
   assert_true(is_err)
 }

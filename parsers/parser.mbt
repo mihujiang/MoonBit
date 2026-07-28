@@ -35,10 +35,10 @@ pub impl OutputParser for JsonOutputParser with fn parse(
 ) -> Result[Json, String] {
   let trimmed = text.trim().to_owned()
   // Strip markdown code fences if present
-  let body = strip_code_fence(trimmed)
+  let body = strip_code_fence(trimmed).trim().to_owned()
   // @json.parse raises ParseError; wrap into Result
   Ok(@json.parse(body)) catch {
-    e => Err("Failed to parse JSON: " + e.to_string() + " | input: " + body)
+    e => Err("JSON parse failed: " + e.to_string() + " | raw: \"" + body + "\"")
   }
 }
 

@@ -98,7 +98,11 @@ pub fn LLMChain::invoke_and_parse(
 ) -> Result[Json, String] {
   let text = self.invoke(vars)
   match self.output_parser {
-    Some(p) => p.parse(text)
+    Some(p) =>
+      match p.parse(text) {
+        Ok(json) => Ok(json)
+        Err(msg) => Err("LLMChain output parsing failed: " + msg)
+      }
     None =>
       Err(
         "No output parser configured. Use LLMChain::with_output_parser to set one.",

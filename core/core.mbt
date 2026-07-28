@@ -126,3 +126,113 @@ pub fn[T] SequentialChain::as_runnable(
 pub fn[T] SequentialChain::length(self : SequentialChain[T]) -> Int {
   self.steps.length()
 }
+
+///|
+/// RouterChain dispatches input to one of several `RunnableWrapper` handlers
+/// based on a decide function.
+///
+/// This is moon-agent's equivalent of LangChain's `RouterChain`. It is
+/// simpler than the LangChain version because the routing decision is
+/// made by a user-provided function (which may itself call an LLM or
+/// use simple keyword matching). This design keeps the routing logic
+/// explicit and testable, while still enabling LLM-based routing when
+/// desired.
+///
+/// Routes are `RunnableWrapper[Map[String, String], String]` — the same
+/// signature as `LLMChain::as_runnable()`, making it straightforward to
+/// route to different LLMChains.
+///
+/// Construction requires a decide function and at least a default route.
+/// Additional routes are added via `add_route`.
+///
+/// Example:
+/// ```moonbit nocheck
+/// let math_chain = math_llm_chain.as_runnable()
+///
+/// let chat_chain = chat_llm_chain.as_runnable()
+///
+/// let fallback = default_chain.as_runnable()
+///
+/// let router = RouterChain::new(
+///     fn(input) {
+///       if input.contains("+") || input.contains("*") {
+///         "math"
+///       } else {
+///         ""
+///       }
+///     },
+///     fallback,
+///   )
+///   |> RouterChain::add_route("math", math_chain)
+///   |> RouterChain::add_route("chat", chat_chain)
+///
+/// let result = router.invoke({ "input": "What is 2 + 3?" })
+/// // → routed to math_chain
+/// ```
+pub struct RouterChain {
+  decide : (String) -> String
+  routes : Map[String, RunnableWrapper[Map[String, String], String]]
+  default : RunnableWrapper[Map[String, String], String]
+}
+
+///|
+/// Create a RouterChain with a decide function and a default handler.
+///
+/// The decide function receives the raw user input (typically from
+/// `vars["input"]`) and returns a route key. If the key is not found
+/// in the routes table, the default handler is used.
+pub fn RouterChain::new(
+  decide : (String) -> String,
+  default : RunnableWrapper[Map[String, String], String],
+) -> RouterChain {
+  { decide, routes: Map([]), default }
+}
+
+///|
+/// Add a route handler for the given key. Returns self for chaining.
+pub fn RouterChain::add_route(
+  self : RouterChain,
+  key : String,
+  handler : RunnableWrapper[Map[String, String], String],
+) -> RouterChain {
+  self.routes[key] = handler
+  self
+}
+
+///|
+/// Decide which route to take based on user input, then run the
+/// selected handler. Falls back to the default handler if no route
+/// matches.
+pub fn RouterChain::invoke(
+  self : RouterChain,
+  vars : Map[String, String],
+) -> String {
+  let input = match vars.get("input") {
+    Some(s) => s
+    None => ""
+  }
+  let key = (self.decide)(input)
+  let handler = match self.routes.get(key) {
+    Some(h) => h
+    None => self.default
+  }
+  handler.invoke(vars)
+}
+
+///|
+/// Convert this RouterChain into a single `RunnableWrapper[Map[String, String], String]`,
+/// enabling further composition (e.g. piping into another wrapper).
+pub fn RouterChain::as_runnable(
+  self : RouterChain,
+) -> RunnableWrapper[Map[String, String], String] {
+  let chain = self
+  RunnableWrapper::new(fn(vars : Map[String, String]) -> String {
+    chain.invoke(vars)
+  })
+}
+
+///|
+/// Number of routes (excluding the default handler).
+pub fn RouterChain::route_count(self : RouterChain) -> Int {
+  self.routes.length()
+}

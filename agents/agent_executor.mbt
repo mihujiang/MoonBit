@@ -180,7 +180,11 @@ pub fn AgentExecutor::invoke_and_parse(
 ) -> Result[Json, String] {
   let text = self.invoke(input)
   match self.output_parser {
-    Some(p) => p.parse(text)
+    Some(p) =>
+      match p.parse(text) {
+        Ok(json) => Ok(json)
+        Err(msg) => Err("AgentExecutor output parsing failed: " + msg)
+      }
     None =>
       Err(
         "No output parser configured. Use AgentExecutor::with_output_parser to set one.",
