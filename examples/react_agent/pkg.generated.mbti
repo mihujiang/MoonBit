@@ -6,7 +6,6 @@ package "mihujiang/agent/examples/react_agent"
 // Errors
 
 // Types and methods
-type EchoTool
 
 // Type aliases
 

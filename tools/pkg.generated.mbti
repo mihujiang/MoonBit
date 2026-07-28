@@ -2,13 +2,28 @@
 package "mihujiang/agent/tools"
 
 // Values
+pub fn param(String, String) -> Json
+
 pub fn[T : Tool] register_into(@mizchi/llm/tools.ToolRegistry, T) -> Unit
 
 pub fn[T : Tool] to_tool_def(T) -> @mizchi/llm/tools.ToolDef
 
+pub fn tool_schema(String, String, String) -> Json
+
+pub fn tool_schema_no_params() -> Json
+
 // Errors
 
 // Types and methods
+pub struct CalculatorTool {
+}
+pub fn CalculatorTool::new() -> Self
+pub impl Tool for CalculatorTool
+
+pub struct DateTimeTool {
+}
+pub fn DateTimeTool::new() -> Self
+pub impl Tool for DateTimeTool
 
 // Type aliases
 

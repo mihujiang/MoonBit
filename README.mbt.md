@@ -5,7 +5,7 @@
 [![CI](https://github.com/mihujiang/MoonBit/actions/workflows/ci.yml/badge.svg)](https://github.com/mihujiang/MoonBit/actions)
 [![mooncakes](https://img.shields.io/badge/mooncakes-mihujiang%2Fagent-blue)](https://mooncakes.io/docs/mihujiang/agent)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.2.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.2.0)
+[![Version](https://img.shields.io/badge/version-0.4.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.4.0)
 
 ---
 
@@ -63,14 +63,14 @@
 ### 安装
 
 ```bash
-moon add mihujiang/agent@0.2.0
+moon add mihujiang/agent@0.4.0
 ```
 
 这会在 `moon.mod` 中添加：
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "mihujiang/agent@0.2.0",
+  "mihujiang/agent@0.4.0",
 }
 ```
 
@@ -199,8 +199,8 @@ moon info                 # 更新生成接口文件
 - 仓库：<https://github.com/mihujiang/MoonBit>
 - mooncakes：<https://mooncakes.io/docs/mihujiang/agent>
 - LLM 依赖：<https://mooncakes.io/docs/mizchi/llm>
-- 使用手册：[使用手册.md](./文件/使用手册.md)
-- 项目进度：[进度.md](./文件/进度.md)
+- 使用手册：[../文件/使用手册.md](../文件/使用手册.md)
+- 项目进度：[../文件/进度.md](../文件/进度.md)
 
 ---
 
@@ -258,14 +258,14 @@ moon info                 # 更新生成接口文件
 ### Installation
 
 ```bash
-moon add mihujiang/agent@0.2.0
+moon add mihujiang/agent@0.4.0
 ```
 
 This adds to your `moon.mod`:
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "mihujiang/agent@0.2.0",
+  "mihujiang/agent@0.4.0",
 }
 ```
 
@@ -394,5 +394,5 @@ moon info                 # update generated interface files
 - Repository: <https://github.com/mihujiang/MoonBit>
 - mooncakes: <https://mooncakes.io/docs/mihujiang/agent>
 - LLM dependency: <https://mooncakes.io/docs/mizchi/llm>
-- User Manual: [使用手册.md](./文件/使用手册.md)
-- Project Progress: [进度.md](./文件/进度.md)
+- User Manual: [../文件/使用手册.md](../文件/使用手册.md)
+- Project Progress: [../文件/进度.md](../文件/进度.md)
