@@ -57,7 +57,7 @@ pub impl Tool for HttpTool with fn run(self : HttpTool, input : Json) -> String 
         Some(Json::String(s)) => s
         _ => return "Error: missing 'url' field"
       }
-      let method = match map.get("method") {
+      let http_method = match map.get("method") {
         Some(Json::String(s)) => s
         _ => "GET"
       }
@@ -69,7 +69,7 @@ pub impl Tool for HttpTool with fn run(self : HttpTool, input : Json) -> String 
         Some(Json::String(s)) => s
         _ => ""
       }
-      (self.fetch)(url, method, headers, body)
+      (self.fetch)(url, http_method, headers, body)
     }
     _ => "Error: input is not a JSON object"
   }
