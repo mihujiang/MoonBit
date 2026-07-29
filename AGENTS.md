@@ -16,7 +16,10 @@ MoonBit/
 ├── moon.pkg                    # 根包声明
 ├── agent.mbt                   # 根模块（版本常量 + 文档）
 ├── README.mbt.md               # 项目 README
+├── USAGE.md                    # GitHub 友好使用指南
 ├── AGENTS.md                   # 本文件
+├── .env.example                # 配置模板（committed）
+├── config.example.json         # JSON 配置模板（committed）
 ├── LICENSE                     # Apache-2.0
 ├── .gitignore
 ├── .githooks/                  # Git 钩子
@@ -26,7 +29,7 @@ MoonBit/
 │   ├── ci.yml                  # 主 CI（native/wasm-gc/js 三目标矩阵）
 │   └── copilot-setup-steps.yml
 │
-├── core/                       # 可组合单元（RunnableWrapper + SequentialChain）
+├── core/                       # 可组合单元（RunnableWrapper + SequentialChain + RouterChain）
 │   ├── core.mbt
 │   ├── core_wbtest.mbt         # 白盒测试: 11 tests
 │   └── moon.pkg
@@ -48,8 +51,17 @@ MoonBit/
 │   ├── buffer_memory_wbtest.mbt  # 白盒测试: 5 tests
 │   ├── summary_memory_wbtest.mbt # 白盒测试: 5 tests
 │   └── moon.pkg
-├── tools/                      # 工具抽象
+├── tools/                      # 工具抽象 + 6 个内置工具
 │   ├── tool.mbt                # Tool trait + register_into 桥接
+│   ├── calculator.mbt          # CalculatorTool
+│   ├── datetime.mbt            # DateTimeTool
+│   ├── http.mbt                # HttpTool
+│   ├── file_read.mbt           # FileReadTool
+│   ├── file_write.mbt          # FileWriteTool
+│   ├── shell.mbt               # ShellTool
+│   ├── schema.mbt              # JSON Schema 辅助
+│   ├── tool_guard.mbt          # ToolGuard（白名单/黑名单）
+│   ├── tool_middleware.mbt     # 重试/超时中间件
 │   └── moon.pkg
 ├── chains/                     # 链式编排
 │   ├── llm_chain.mbt           # LLMChain（prompt + provider + memory + parser + stream）
@@ -59,14 +71,46 @@ MoonBit/
 │   ├── agent_executor.mbt      # AgentExecutor（run_agent + memory + parser + stream）
 │   ├── agent_executor_wbtest.mbt  # 白盒测试: 4 tests
 │   └── moon.pkg
-├── cmd/main/                   # CLI 入口
-│   ├── main.mbt                # 打印版本信息
+├── config/                     # 统一配置（v0.9）
+│   ├── config.mbt              # ChatConfig + load_config
+│   ├── config_js.mbt           # JS 目标文件读取
+│   ├── config_native.mbt       # Native 目标（回退到 env vars）
+│   ├── config_wasm.mbt         # Wasm 目标（回退到 env vars）
+│   ├── config_native_stub.c    # Native C stub（v0.10）
+│   └── moon.pkg
+├── observability/              # 可观测性（v0.9-5）
+│   ├── observability.mbt       # UsageTracker + CallTrace + TimingTracker
+│   ├── observability_wbtest.mbt # 白盒测试: 12 tests
+│   └── moon.pkg
+├── mcp/                        # MCP 协议桥接（v0.8）
+│   ├── mcp_types.mbt           # JSON-RPC 2.0 类型
+│   ├── mcp_client.mbt          # MCPClient
+│   ├── mcp_server.mbt          # MCPServer
+│   ├── mcp_bridge.mbt          # MCPToolBridge
+│   └── moon.pkg
+├── rag/                        # RAG 基础（v0.10）
+│   ├── loader.mbt              # Document + TextLoader + SimpleTextLoader
+│   ├── splitter.mbt            # TextSplitter + RecursiveCharacterTextSplitter
+│   ├── splitter_wbtest.mbt     # 白盒测试: 3 tests
+│   └── moon.pkg
+├── cmd/
+│   ├── main/                   # CLI 入口（打印版本信息）
+│   │   ├── main.mbt
+│   │   └── moon.pkg
+│   └── chat/                   # 交互式 REPL（v0.8 引入，v0.10 升级）
+│       ├── main.mbt
+│       ├── io_js.mbt           # JS stdin FFI
+│       ├── io_native.mbt       # Native stdin stub
+│       ├── io_wasm.mbt         # Wasm stdin stub
+│       └── moon.pkg
+├── local-test/                 # 本地集成测试（gitignored）
+│   ├── main.mbt
 │   └── moon.pkg
 └── examples/                   # 示例
-    ├── quickstart/             # 最小 LLMChain 示例
+    ├── quickstart/             # 最小 LLMChain 示例（v0.9 接入 config）
     │   ├── main.mbt
     │   └── moon.pkg
-    └── react_agent/            # 自定义 Tool + ReAct Agent 示例
+    └── react_agent/            # ReAct Agent + 内置工具示例（v0.9 接入 config）
         ├── main.mbt
         └── moon.pkg
 ```
@@ -76,6 +120,11 @@ MoonBit/
 - `agents` 依赖 `memory`, `parsers`
 - `memory` 依赖 `mizchi/llm`（SummaryMemory 需要 Provider 做摘要）
 - `tools` 依赖 `moonbitlang/core/json`, `mizchi/llm/tools`
+- `config` 依赖 `moonbitlang/core/json`, `moonbitlang/core/env`（多目标 FFI）
+- `observability` 依赖 `mizchi/llm`, `moonbitlang/core/json`
+- `mcp` 依赖 `mizchi/llm`, `mizchi/llm/tools`, `mihujiang/agent/tools`
+- `rag` 无内部依赖
+- `cmd/chat` 依赖 `config`, `observability`, `memory`, `tools`, `mizchi/llm`
 - `core`, `prompts`, `parsers` 无内部依赖，只依赖标准库和 `mizchi/llm`
 
 ### 设计原则
@@ -88,49 +137,34 @@ MoonBit/
 
 ### 编码规范
 
-- MoonBit 代码以块（block）风格组织，每个块由 `///|` 分隔，块的顺序无关紧要。在某些重构中，可以逐块独立处理。
+- MoonBit 代码以块（block）风格组织，每个块由 `///|` 分隔，块的顺序无关紧要。
 
-- 每个包的 public API 集中在该包的主文件（如 `core.mbt`、`llm_chain.mbt`）。文件命名规则：
+- 每个包的 public API 集中在该包的主文件。文件命名规则：
   - `<功能>.mbt`：公开 API 实现
   - `<功能>_wbtest.mbt`：白盒测试（可访问包内类型和函数）
   - `_test.mbt`：黑盒测试（仅访问 public API）
 
-- 尽量将废弃的块保留在每个目录下名为 `deprecated.mbt` 的文件中。
+- **trait 实现必须加 `pub`**：`pub impl Trait for Type ...` 才能跨包可见。
 
-- **trait 实现必须加 `pub`**：MoonBit 要求 `pub impl Trait for Type ...` 才能让 trait 实现跨包可见。忘记加 `pub` 会导致调用方找不到实现。
+- **Boxed trait 对象模式**：用 `BoxedMemory`、`BoxedOutputParser` 等 wrapper 将 `&Trait` 引用装箱。
 
-- **Boxed trait 对象模式**：因 MoonBit trait 不能直接作类型，框架中用 `BoxedMemory`、`BoxedOutputParser` 等 wrapper 将 `&Trait` 引用装箱。添加新的 trait + 装箱对时，参考 `boxed_memory.mbt` 和 `boxed_parser.mbt`。
-
-- **测试用 mock**：`mizchi/llm` 的 `MockProvider` 有非 pub impl，不能跨包使用。每个测试文件定义自己的 `TestMockProvider`（参考 `chains/llm_chain_wbtest.mbt`）。
+- **测试用 mock**：每个测试文件定义自己的 `TestMockProvider`（参考 `chains/llm_chain_wbtest.mbt`）。
 
 ### 工具链
 
-- `moon fmt`：格式化代码。CI 中通过 `moon fmt --check` 验证格式一致性。
-
-- `moon check --target <target>`：类型检查（比 build 轻量，不生成产物）。
-
-- `moon build --target <target>`：构建指定目标（native / wasm-gc / js）。注意 native 需要 C 编译器（gcc/clang）。
-
-- `moon test --target <target>`：运行所有测试。MoonBit 支持快照测试；当改动影响输出时，运行 `moon test --update` 刷新快照。
-
-- `moon info --target <target>`：更新包的生成接口文件 `.mbti`。如果 `.mbti` 没有变化，说明改动对外部包用户不可见，通常是安全的重构。
-
-- `moon clean`：清理 build 产物。建议在 CI 构建前执行以确保完全重新编译。
-
-- `moon update`：更新 registry 索引和依赖的 mooncakes。
-
-- 在最后一步，运行 `moon info && moon fmt` 更新接口并格式化代码。检查 `.mbti` 文件的 diff 以确认改动符合预期。
-
-- 对于稳定或极不可能改变的结果，优先使用 `assert_eq` 或 `assert_true(pattern is Pattern(...))`。对于记录结构化调试输出的快照测试，应派生 `Debug` 并使用 `debug_inspect`，而不是为调试派生 `Show`。对于明确定义的稳固结果（如科学计算），优先使用断言测试。可以使用 `moon coverage analyze > uncovered.log` 查看代码中未被测试覆盖的部分。
+- `moon fmt`：格式化代码。CI 中通过 `moon fmt --check` 验证。
+- `moon build --target <target>`：构建指定目标（native / wasm-gc / js）。
+- `moon test --target <target>`：运行所有测试。
+- `moon info --target <target>`：更新 `.mbti` 接口文件。
+- `moon update`：更新 registry 索引。
 
 ### 添加新功能指南
 
-1. **添加新包**：在 MoonBit/ 下创建目录，添加 `moon.pkg`（声明依赖）和源文件
-2. **添加新 trait**：定义 trait，创建对应的 `Boxed*` wrapper（参考 `BoxedMemory`）
-3. **接入 LLMChain/AgentExecutor**：在对应 `with_*` 方法中接受 `&Trait` 引用，内部装箱
-4. **添加测试**：创建 `<name>_wbtest.mbt`，定义 `TestMockProvider`，覆盖边界情况
-5. **更新 .mbti**：`moon info --target native` 重新生成接口文件
-6. **更新文档**：`使用手册.md`、`进度.md`、`README.mbt.md`、本文件
+1. **添加新包**：在 MoonBit/ 下创建目录，添加 `moon.pkg` 和源文件
+2. **添加新 trait**：定义 trait，创建对应的 `Boxed*` wrapper
+3. **接入 LLMChain/AgentExecutor**：在对应 `with_*` 方法中接受 `&Trait` 引用
+4. **添加测试**：创建 `<name>_wbtest.mbt`，覆盖边界情况
+5. **更新文档**：`USAGE.md`、`README.mbt.md`、`AGENTS.md`、本地 `文件/` 下的四个文档
 
 ### 版本发布流程
 
@@ -150,76 +184,6 @@ This is an [MoonBit](https://docs.moonbitlang.com) AI Agent framework project (m
 
 You can browse and install extra skills here: <https://github.com/moonbitlang/skills>
 
-### Project Structure
-
-```
-MoonBit/
-├── moon.mod                    # Module metadata (name, version, dependencies)
-├── moon.pkg                    # Root package declaration
-├── agent.mbt                   # Root module (version constant + docs)
-├── README.mbt.md               # Project README
-├── AGENTS.md                   # This file
-├── LICENSE                     # Apache-2.0
-├── .gitignore
-├── .githooks/                  # Git hooks
-│   ├── pre-commit              # Pre-commit check (moon check)
-│   └── README.md
-├── .github/workflows/          # CI configuration
-│   ├── ci.yml                  # Main CI (native/wasm-gc/js matrix)
-│   └── copilot-setup-steps.yml
-│
-├── core/                       # Composable units (RunnableWrapper + SequentialChain)
-│   ├── core.mbt
-│   ├── core_wbtest.mbt         # Whitebox tests: 11 tests
-│   └── moon.pkg
-├── prompts/                    # Prompt templates
-│   ├── template.mbt            # PromptTemplate ({var} interpolation)
-│   ├── chat_prompt.mbt         # ChatPromptTemplate (multi-role ordered messages)
-│   ├── template_wbtest.mbt     # Whitebox tests: 6 tests
-│   └── moon.pkg
-├── parsers/                    # Output parsers
-│   ├── parser.mbt              # OutputParser trait + JsonOutputParser
-│   ├── boxed_parser.mbt        # BoxedOutputParser (trait object boxing)
-│   ├── parser_wbtest.mbt       # Whitebox tests: 7 tests
-│   └── moon.pkg
-├── memory/                     # Conversation memory
-│   ├── memory.mbt              # Memory trait
-│   ├── buffer_memory.mbt       # BufferMemory + BufferWindowMemory
-│   ├── summary_memory.mbt      # SummaryMemory (periodic LLM summarization)
-│   ├── boxed_memory.mbt        # BoxedMemory (trait object boxing)
-│   ├── buffer_memory_wbtest.mbt  # Whitebox tests: 5 tests
-│   ├── summary_memory_wbtest.mbt # Whitebox tests: 5 tests
-│   └── moon.pkg
-├── tools/                      # Tool abstraction
-│   ├── tool.mbt                # Tool trait + register_into bridge
-│   └── moon.pkg
-├── chains/                     # Chain orchestration
-│   ├── llm_chain.mbt           # LLMChain (prompt + provider + memory + parser + stream)
-│   ├── llm_chain_wbtest.mbt    # Whitebox tests: 7 tests
-│   └── moon.pkg
-├── agents/                     # ReAct Agent
-│   ├── agent_executor.mbt      # AgentExecutor (run_agent + memory + parser + stream)
-│   ├── agent_executor_wbtest.mbt  # Whitebox tests: 4 tests
-│   └── moon.pkg
-├── cmd/main/                   # CLI entry point
-│   ├── main.mbt                # Prints version info
-│   └── moon.pkg
-└── examples/                   # Examples
-    ├── quickstart/             # Minimal LLMChain example
-    │   ├── main.mbt
-    │   └── moon.pkg
-    └── react_agent/            # Custom Tool + ReAct Agent example
-        ├── main.mbt
-        └── moon.pkg
-```
-
-**Package dependency graph**:
-- `chains` depends on `prompts`, `memory`, `parsers`, `core`
-- `agents` depends on `memory`, `parsers`
-- `memory` depends on `mizchi/llm` (SummaryMemory needs Provider for summarization)
-- `tools` depends on `moonbitlang/core/json`, `mizchi/llm/tools`
-- `core`, `prompts`, `parsers` have no internal deps, only stdlib and `mizchi/llm`
-
 ### Design Principles
 
 1. **Type safety**: All abstractions use traits + generic structs, compile-time interface contract guarantees
@@ -230,56 +194,34 @@ MoonBit/
 
 ### Coding Conventions
 
-- MoonBit code is organized in block style, each block is separated by `///|`, the order of each block is irrelevant. In some refactorings, you can process block by block independently.
-
-- Each package's public API is concentrated in its main file (e.g., `core.mbt`, `llm_chain.mbt`). File naming rules:
-  - `<feature>.mbt`: public API implementation
-  - `<feature>_wbtest.mbt`: whitebox tests (can access package-internal types and functions)
-  - `_test.mbt`: blackbox tests (only access public API)
-
-- Try to keep deprecated blocks in file called `deprecated.mbt` in each directory.
-
-- **Trait implementations must use `pub`**: MoonBit requires `pub impl Trait for Type ...` for trait implementations to be visible across packages. Forgetting `pub` will result in callers not finding the implementation.
-
-- **Boxed trait object pattern**: Since MoonBit traits cannot be used directly as types, the framework uses `BoxedMemory`, `BoxedOutputParser`, etc. to box `&Trait` references. When adding a new trait + boxed pair, refer to `boxed_memory.mbt` and `boxed_parser.mbt`.
-
-- **Test mocks**: `mizchi/llm`'s `MockProvider` has a non-pub impl and cannot be used across packages. Each test file defines its own `TestMockProvider` (refer to `chains/llm_chain_wbtest.mbt`).
+- MoonBit code is organized in block style, each block separated by `///|`, order irrelevant.
+- File naming: `<feature>.mbt` (public API), `<feature>_wbtest.mbt` (whitebox tests), `_test.mbt` (blackbox tests).
+- **Trait implementations must use `pub`**: `pub impl Trait for Type ...` for cross-package visibility.
+- **Boxed trait object pattern**: Use `BoxedMemory`, `BoxedOutputParser` etc. to box `&Trait` references.
+- **Test mocks**: Each test file defines its own `TestMockProvider` (see `chains/llm_chain_wbtest.mbt`).
 
 ### Tooling
 
-- `moon fmt`: Format code. In CI, use `moon fmt --check` to verify format consistency.
-
-- `moon check --target <target>`: Type check (lighter than build, no artifacts produced).
-
-- `moon build --target <target>`: Build for specified target (native / wasm-gc / js). Note: native requires a C compiler (gcc/clang).
-
-- `moon test --target <target>`: Run all tests. MoonBit supports snapshot testing; when changes affect outputs, run `moon test --update` to refresh snapshots.
-
-- `moon info --target <target>`: Update the package's generated interface file `.mbti`. If nothing in `.mbti` changes, it means your change is not visible to external package users — typically a safe refactoring.
-
-- `moon clean`: Clean build artifacts. Recommended to execute before CI builds to ensure full recompilation.
-
-- `moon update`: Update registry index and dependency mooncakes.
-
-- In the last step, run `moon info && moon fmt` to update the interface and format the code. Check the diffs of `.mbti` files to see if the changes are expected.
-
-- Prefer `assert_eq` or `assert_true(pattern is Pattern(...))` for results that are stable or very unlikely to change. For snapshot tests that record structured debugging output, derive `Debug` and use `debug_inspect`, rather than deriving `Show` for debugging. For solid, well-defined results (e.g. scientific computations), prefer assertion tests. You can use `moon coverage analyze > uncovered.log` to see which parts of your code are not covered by tests.
+- `moon fmt`: Format code. CI uses `moon fmt --check`.
+- `moon build --target <target>`: Build for specified target.
+- `moon test --target <target>`: Run all tests.
+- `moon info --target <target>`: Update `.mbti` interface files.
+- `moon update`: Update registry index.
 
 ### Adding New Features
 
-1. **Add a new package**: Create a directory under MoonBit/, add `moon.pkg` (declare dependencies) and source files
-2. **Add a new trait**: Define the trait, create the corresponding `Boxed*` wrapper (refer to `BoxedMemory`)
-3. **Wire into LLMChain/AgentExecutor**: Accept `&Trait` references in the corresponding `with_*` method, box internally
-4. **Add tests**: Create `<name>_wbtest.mbt`, define `TestMockProvider`, cover edge cases
-5. **Update .mbti**: `moon info --target native` to regenerate interface files
-6. **Update docs**: `使用手册.md`, `进度.md`, `README.mbt.md`, this file
+1. Create directory under MoonBit/, add `moon.pkg` and source files
+2. Define trait, create `Boxed*` wrapper
+3. Accept `&Trait` references in `with_*` methods
+4. Create `<name>_wbtest.mbt`, cover edge cases
+5. Update docs: `USAGE.md`, `README.mbt.md`, `AGENTS.md`, local `文件/` docs
 
 ### Release Process
 
 1. Ensure `moon fmt --check` + `moon build` + `moon test` pass on all three targets
 2. Update `version` in `moon.mod`
-3. Update the `version` constant in `agent.mbt`
-4. Update the version badge in `README.mbt.md`
-5. Commit and push, wait for CI to go green
+3. Update `version` constant in `agent.mbt`
+4. Update version badge in `README.mbt.md`
+5. Commit and push, wait for CI green
 6. Tag: `git tag v0.x.0 && git push origin v0.x.0`
 7. Publish to mooncakes: `moon publish`
