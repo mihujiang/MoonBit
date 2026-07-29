@@ -5,6 +5,16 @@ import {
   "mizchi/llm/tools" @llm_tools,
   "mihujiang/agent/tools",
   "mihujiang/agent/config",
+  "mihujiang/agent/observability",
+  "mihujiang/agent/memory",
 }
 
 pkgtype(kind: "executable")
+
+options(
+  targets: {
+    "io_js.mbt": [ "js" ],
+    "io_native.mbt": [ "native" ],
+    "io_wasm.mbt": [ "wasm", "wasm-gc" ],
+  },
+)

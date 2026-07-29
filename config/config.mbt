@@ -2,12 +2,21 @@
 /// config — unified configuration loader for moon-agent executables.
 ///
 /// Provides `ChatConfig` struct and `load_config()` to read API settings
-/// from `config.json` at project root, with env var fallback.
+/// from `.env` / `config.json` at project root, with env var fallback.
 ///
 /// Lookup order:
-/// 1. `config.json` in current working directory
-/// 2. `../config.json` (parent directory, for executables in subdirs like `cmd/chat`)
-/// 3. Environment variables: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`
+/// 1. `./.env` (simple KEY=VALUE format, recommended)
+/// 2. `./config.json`
+/// 3. `../.env` (parent directory, for executables in subdirs like `cmd/chat`)
+/// 4. `../config.json`
+/// 5. Environment variables: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`
+///
+/// Example `.env`:
+/// ```
+/// OPENAI_API_KEY=sk-...
+/// OPENAI_BASE_URL=https://api.deepseek.com
+/// OPENAI_MODEL=deepseek-chat
+/// ```
 ///
 /// Example `config.json`:
 /// ```json
@@ -69,16 +78,73 @@ pub fn load_config_from_file(path : String) -> ChatConfig? {
 }
 
 ///|
+/// Parse a `.env` format string into a `ChatConfig`.
+/// Format: one `KEY=VALUE` per line, `#` lines are comments, blank lines ignored.
+/// Supported keys: `OPENAI_API_KEY`, `OPENAI_BASE_URL`, `OPENAI_MODEL`.
+fn load_config_from_dotenv_content(content : String) -> ChatConfig? {
+  let mut api_key = ""
+  let mut base_url = "https://api.openai.com"
+  let mut model = "gpt-4o"
+  let lines = content.split("\n")
+  for line in lines {
+    let trimmed = line.trim()
+    // skip blank lines and comments
+    if trimmed == "" || trimmed.has_prefix("#") {
+      continue
+    }
+    let eq_pos = trimmed.find("=")
+    match eq_pos {
+      Some(pos) => {
+        let key = trimmed[0:pos].to_owned().trim()
+        let val = trimmed[pos + 1:trimmed.length()].to_owned().trim()
+        match key {
+          "OPENAI_API_KEY" => api_key = val.to_owned()
+          "OPENAI_BASE_URL" => base_url = val.to_owned()
+          "OPENAI_MODEL" => model = val.to_owned()
+          _ => ()
+        }
+      }
+      None => ()
+    }
+  }
+  if api_key == "" {
+    return None
+  }
+  Some({ api_key, base_url, model, max_tokens: 4096, system_prompt: "" })
+}
+
+///|
+/// Load config from a `.env` file at the given path.
+/// Returns `None` if the file cannot be read or lacks `OPENAI_API_KEY`.
+pub fn load_config_from_env_file(path : String) -> ChatConfig? {
+  let content = read_file_to_string(path)
+  if content == "" {
+    return None
+  }
+  load_config_from_dotenv_content(content)
+}
+
+///|
 /// Load config from default locations, falling back to env vars.
 ///
 /// Lookup order:
-/// 1. `./config.json`
-/// 2. `../config.json`
-/// 3. Env vars: `OPENAI_API_KEY` (required), `OPENAI_BASE_URL`, `OPENAI_MODEL`
+/// 1. `./.env`
+/// 2. `./config.json`
+/// 3. `../.env`
+/// 4. `../config.json`
+/// 5. Env vars: `OPENAI_API_KEY` (required), `OPENAI_BASE_URL`, `OPENAI_MODEL`
 ///
 /// Returns `None` if no valid config found.
 pub fn load_config() -> ChatConfig? {
+  match load_config_from_env_file(".env") {
+    Some(c) => return Some(c)
+    None => ()
+  }
   match load_config_from_file("config.json") {
+    Some(c) => return Some(c)
+    None => ()
+  }
+  match load_config_from_env_file("../.env") {
     Some(c) => return Some(c)
     None => ()
   }
@@ -120,12 +186,15 @@ pub fn load_config_or_abort() -> ChatConfig {
     None => {
       println("Error: No API configuration found.")
       println("")
-      println("To configure, create `config.json` at project root:")
-      println("  {")
-      println("    \"api_key\": \"sk-...\",")
-      println("    \"base_url\": \"https://api.deepseek.com\",")
-      println("    \"model\": \"deepseek-chat\"")
-      println("  }")
+      println("To configure, create `.env` at project root:")
+      println("  OPENAI_API_KEY=sk-...")
+      println("  OPENAI_BASE_URL=https://api.deepseek.com")
+      println("  OPENAI_MODEL=deepseek-chat")
+      println("")
+      println("Or create `config.json`:")
+      println(
+        "  { \"api_key\": \"sk-...\", \"base_url\": \"https://api.deepseek.com\", \"model\": \"deepseek-chat\" }",
+      )
       println("")
       println(
         "Or set env vars: OPENAI_API_KEY, OPENAI_BASE_URL (optional), OPENAI_MODEL (optional)",

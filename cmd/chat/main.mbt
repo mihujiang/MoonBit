@@ -2,52 +2,89 @@
 /// moon-agent chat — interactive AI assistant in the terminal.
 ///
 /// Configuration:
-///   Create `config.json` at project root (see `config.example.json`):
-///   ```json
-///   {
-///     "api_key": "sk-...",
-///     "base_url": "https://api.deepseek.com",
-///     "model": "deepseek-chat"
-///   }
-///   ```
-///   Or set env vars: OPENAI_API_KEY, OPENAI_BASE_URL (optional), OPENAI_MODEL (optional)
+///   Create `.env` at project root (see `.env.example`):
+///     OPENAI_API_KEY=sk-...
+///     OPENAI_BASE_URL=https://api.deepseek.com
+///     OPENAI_MODEL=deepseek-chat
 ///
 /// Usage:
 ///   moon run cmd/chat --target js
-///     → demo mode (built-in questions showcasing tools)
+///     → interactive REPL mode (default)
 ///
 ///   $env:MOON_AGENT_INPUT = "What is 15 * 23 + 100?"
 ///   moon run cmd/chat --target js
-///     → single-question mode
+///     → single-question mode (legacy)
 ///
 ///   $env:MOON_AGENT_LIST_TOOLS = "1"
 ///   moon run cmd/chat --target js
 ///     → list all registered tools
 ///
-/// Built-in tools: calculator, get_current_time, http_request, read_file,
-/// write_file, shell_exec (6 total)
+/// REPL commands:
+///   /exit, /quit    — exit
+///   /help           — show commands
+///   /tools          — list registered tools
+///   /clear          — clear conversation memory
+///   /usage          — show accumulated token usage & cost
+///   /trace          — show last turn's decision trail
+///
+/// Built-in tools: calculator, get_current_time (2 in REPL)
 
 ///|
 fn main {
-  // Load config from config.json or env vars
   let config = @config.load_config_or_abort()
 
+  // Legacy env-var modes (backward compatible)
   let list_tools = @env.get_env_var("MOON_AGENT_LIST_TOOLS")
   match list_tools {
-    Some(_) => list_all_tools()
-    None => {
-      let user_input = @env.get_env_var("MOON_AGENT_INPUT")
-      match user_input {
-        Some(input) => {
-          println("=== moon-agent chat v0.9.0 ===")
-          println("Endpoint: " + config.base_url + " | Model: " + config.model)
-          println("")
-          chat_once(config, input)
-        }
-        None => run_demo(config)
-      }
+    Some(_) => {
+      list_all_tools()
+      return
     }
+    None => ()
   }
+  let user_input = @env.get_env_var("MOON_AGENT_INPUT")
+  match user_input {
+    Some(input) => {
+      println("=== moon-agent chat v0.10.0 ===")
+      println("Endpoint: " + config.base_url + " | Model: " + config.model)
+      println("")
+      let provider = build_provider(config)
+      let registry = build_registry()
+      chat_turn(
+        provider,
+        registry,
+        @memory.BufferMemory::new(),
+        @observability.UsageTracker::new(),
+        @observability.CallTrace::new(),
+        input,
+      )
+      return
+    }
+    None => ()
+  }
+
+  // REPL mode (default)
+  repl(config)
+}
+
+///|
+fn build_provider(config : @config.ChatConfig) -> @llm.BoxedProvider {
+  let provider = @openai.OpenAIProvider::new_compat(
+    config.base_url,
+    config.model,
+    api_key=config.api_key,
+    max_tokens=config.max_tokens,
+    system_prompt=config.system_prompt,
+  )
+  @llm.BoxedProvider::new(provider)
+}
+
+///|
+fn build_registry() -> @llm_tools.ToolRegistry {
+  let registry = @llm_tools.ToolRegistry::new()
+  @tools.register_into(registry, @tools.CalculatorTool::new())
+  @tools.register_into(registry, @tools.DateTimeTool::new())
+  registry
 }
 
 ///|
@@ -62,96 +99,154 @@ fn list_all_tools() -> Unit {
   println("")
   println("Middleware: ToolGuard (allowlist/denylist), RetryTool, with_retry")
   println("")
-  println("Configure via config.json (see config.example.json) or env vars.")
+  println("Configure via .env (see .env.example) or config.json.")
 }
 
 ///|
-fn run_demo(config : @config.ChatConfig) -> Unit {
-  println("=== moon-agent chat v0.9.0 ===")
+fn repl(config : @config.ChatConfig) -> Unit {
+  println("=== moon-agent chat v0.10.0 ===")
   println("Endpoint: " + config.base_url + " | Model: " + config.model)
+  println("Type /help for commands, /exit to quit")
   println("")
 
-  println(">>> Demo 1: Math (CalculatorTool)")
-  chat_once(config, "Calculate 15 * 23 + 100, just give me the numeric result.")
-  println("")
+  let provider = build_provider(config)
+  let registry = build_registry()
+  let memory = @memory.BufferMemory::new()
+  let usage = @observability.UsageTracker::new()
 
-  println(">>> Demo 2: Time (DateTimeTool)")
-  chat_once(
-    config, "What is the current date and time? Use the get_current_time tool.",
-  )
-  println("")
+  while true {
+    print("You: ")
+    let line = read_line()
+    if line == "" {
+      continue
+    }
+    let trimmed : String = line.trim().to_owned()
+    if trimmed == "" {
+      continue
+    }
 
-  println(">>> Demo 3: Multi-turn memory")
-  chat_once(config, "My name is Alice. Remember it for the next turn.")
-  println("")
+    // Commands
+    if trimmed == "/exit" || trimmed == "/quit" {
+      println("")
+      println(usage.format())
+      println("Goodbye!")
+      break
+    }
+    if trimmed == "/help" {
+      show_repl_help()
+      continue
+    }
+    if trimmed == "/tools" {
+      list_all_tools()
+      continue
+    }
+    if trimmed == "/clear" {
+      memory.clear()
+      println("[Memory cleared]")
+      continue
+    }
+    if trimmed == "/usage" {
+      println(usage.format())
+      continue
+    }
 
-  println("---")
-  println("Set MOON_AGENT_INPUT env var for custom questions:")
-  println("  $env:MOON_AGENT_INPUT = \"your question\"")
-  println("List tools:")
-  println("  $env:MOON_AGENT_LIST_TOOLS = 1")
+    // Chat turn
+    let trace = @observability.CallTrace::new()
+    if trimmed == "/trace" {
+      // /trace alone: show last trace (stored from previous turn)
+      println("(no previous turn to trace)")
+      continue
+    }
+    chat_turn(provider, registry, memory, usage, trace, trimmed)
+    println("")
+  }
 }
 
 ///|
-/// Run a single chat turn with full event visibility:
-/// - TextDelta streamed to stdout as it arrives
-/// - ToolExecute / ToolResult displayed with prefix markers
-/// - Error events surfaced (no more silent failures)
-/// - StepComplete / Done shown for debugging
-fn chat_once(config : @config.ChatConfig, question : String) -> Unit {
-  // Build provider from config (supports DeepSeek, OpenAI, any OpenAI-compatible endpoint)
-  let provider = @openai.OpenAIProvider::new_compat(
-    config.base_url,
-    config.model,
-    api_key=config.api_key,
-    max_tokens=config.max_tokens,
-    system_prompt=config.system_prompt,
-  )
-  let boxed = @llm.BoxedProvider::new(provider)
+fn show_repl_help() -> Unit {
+  println("Commands:")
+  println("  /exit, /quit    Exit the chat")
+  println("  /help           Show this help")
+  println("  /tools          List registered tools")
+  println("  /clear          Clear conversation memory")
+  println("  /usage          Show token usage & cost")
+  println("")
+  println("Anything else is sent to the AI agent.")
+  println("Built-in tools: calculator, get_current_time")
+}
 
-  // Build tool registry with all built-in tools
-  let registry = @llm_tools.ToolRegistry::new()
-  @tools.register_into(registry, @tools.CalculatorTool::new())
-  @tools.register_into(registry, @tools.DateTimeTool::new())
-
-  // Build messages (with optional system prompt from config)
-  let messages : Array[@llm.Message] = []
-  if !config.system_prompt.is_empty() {
-    messages.push(@llm.Message::system(config.system_prompt))
-  }
+///|
+/// Run a single chat turn with memory persistence, event visibility,
+/// and observability (token usage + call trace).
+fn chat_turn(
+  provider : @llm.BoxedProvider,
+  registry : @llm_tools.ToolRegistry,
+  memory : @memory.BufferMemory,
+  usage : @observability.UsageTracker,
+  trace : @observability.CallTrace,
+  question : String,
+) -> Unit {
+  // Build messages from memory (preserves conversation history)
+  let messages = memory.load_messages()
   let user_msg = @llm.Message::user(question)
   messages.push(user_msg)
 
-  println("You: " + question)
   println("Agent: ")
+  // Use cell arrays for closure-captured mutable state
+  let has_output : Array[Bool] = [false]
+  let response_text : Array[String] = [""]
 
-  // Run agent loop with a verbose event handler
-  @llm.run_agent(boxed, registry, messages, @llm.StopCondition::MaxSteps(8), fn(
-    event : @llm.AgentEvent,
-  ) -> Unit {
-    match event {
-      @llm.AgentEvent::Stream(e) =>
-        match e {
-          @llm.StreamEvent::TextDelta(s) => println(s)
-          @llm.StreamEvent::Error(msg) => println("\n[API Error] " + msg)
-          _ => ()
+  // Run agent loop with observability hooks
+  @llm.run_agent(
+    provider,
+    registry,
+    messages,
+    @llm.StopCondition::MaxSteps(8),
+    fn(event : @llm.AgentEvent) -> Unit {
+      usage.record(event)
+      trace.record(event)
+      match event {
+        @llm.AgentEvent::Stream(e) =>
+          match e {
+            @llm.StreamEvent::TextDelta(s) => {
+              print(s)
+              has_output[0] = true
+              response_text[0] = response_text[0] + s
+            }
+            @llm.StreamEvent::Error(msg) => println("\n  [API Error] " + msg)
+            _ => ()
+          }
+        @llm.AgentEvent::ToolExecute(name~, input~) =>
+          println(
+            "\n  [→ calling tool: " + name + "] input: " + input.stringify(),
+          )
+        @llm.AgentEvent::ToolResult(name~, result~, is_error~) => {
+          let preview = if result.length() > 100 {
+            result[0:100].to_owned() + "..."
+          } else {
+            result
+          }
+          let tag = if is_error { " (ERROR)" } else { "" }
+          println("  [← " + name + " result" + tag + "] " + preview)
         }
-      @llm.AgentEvent::ToolExecute(name~, input~) =>
-        println(
-          "\n  [→ calling tool: " + name + "] input: " + input.stringify(),
-        )
-      @llm.AgentEvent::ToolResult(name~, result~, is_error~) => {
-        let preview = if result.length() > 100 {
-          result[0:100].to_owned() + "..."
-        } else {
-          result
-        }
-        let tag = if is_error { " (ERROR)" } else { "" }
-        println("  [← " + name + " result" + tag + "] " + preview)
+        _ => ()
       }
-      @llm.AgentEvent::Done(reason~) => println("\n  [done: " + reason + "]")
-      _ => ()
-    }
-  })
-  println("")
+    },
+  )
+
+  // Flush final newline if there was output
+  if has_output[0] {
+    println("")
+  }
+
+  // Save to memory: user message + assistant response
+  memory.save_message(user_msg)
+  if response_text[0] != "" {
+    memory.save_message(@llm.Message::assistant(response_text[0]))
+  }
+
+  // Show token stats
+  if usage.total_tokens() > 0 {
+    println(usage.format())
+  }
 }

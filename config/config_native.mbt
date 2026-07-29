@@ -4,6 +4,6 @@
 ///
 /// To enable native file reading, add a C stub similar to mizchi/llm's
 /// `native_stub.c`. For now, native users must use env vars.
-fn read_file_to_string(_path : String) -> String {
+pub fn read_file_to_string(_path : String) -> String {
   ""
 }
