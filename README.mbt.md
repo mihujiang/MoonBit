@@ -244,8 +244,7 @@ moon info                 # 更新生成接口文件
 - mooncakes：<https://mooncakes.io/docs/mihujiang/agent>
 - LLM 依赖：<https://mooncakes.io/docs/mizchi/llm>
 - 使用指南：[USAGE.md](USAGE.md)（GitHub 友好版本）
-- 完整使用手册：[../文件/使用手册.md](../文件/使用手册.md)
-- 项目进度：[../文件/进度.md](../文件/进度.md)
+- 项目进度：参见仓库 `MoonBit/` 目录下的 commit 历史
 
 ---
 
@@ -442,4 +441,4 @@ chain.invoke_stream(vars, fn(delta) {
 - mooncakes: <https://mooncakes.io/docs/mihujiang/agent>
 - LLM dependency: <https://mooncakes.io/docs/mizchi/llm>
 - Usage Guide: [USAGE.md](USAGE.md)
-- Project Progress: [../文件/进度.md](../文件/进度.md)
+- Project Progress: See commit history under `MoonBit/`
