@@ -244,12 +244,16 @@ pub fn TimingTracker::record(
 /// Average duration for a tool in milliseconds. Returns 0.0 if never called.
 pub fn TimingTracker::avg_ms(self : TimingTracker, tool_name : String) -> Float {
   match self.total_ms.get(tool_name) {
-    Some(total) => {
+    Some(total) =>
       match self.counts.get(tool_name) {
-        Some(count) => if count > 0 { total / Float::from_int(count) } else { 0.0 }
+        Some(count) =>
+          if count > 0 {
+            total / Float::from_int(count)
+          } else {
+            0.0
+          }
         None => 0.0
       }
-    }
     None => 0.0
   }
 }
