@@ -78,9 +78,9 @@ MoonBit/
 │   ├── config_wasm.mbt         # Wasm 目标（回退到 env vars）
 │   ├── config_native_stub.c    # Native C stub（v0.10）
 │   └── moon.pkg
-├── observability/              # 可观测性（v0.9-5）
-│   ├── observability.mbt       # UsageTracker + CallTrace + TimingTracker
-│   ├── observability_wbtest.mbt # 白盒测试: 12 tests
+├── observability/              # 可观测性（v1.0）
+│   ├── observability.mbt       # UsageTracker + CallTrace + TimingTracker + ErrorLogger
+│   ├── observability_wbtest.mbt # 白盒测试: 16 tests
 │   └── moon.pkg
 ├── mcp/                        # MCP 协议桥接（v0.8）
 │   ├── mcp_types.mbt           # JSON-RPC 2.0 类型
@@ -88,10 +88,14 @@ MoonBit/
 │   ├── mcp_server.mbt          # MCPServer
 │   ├── mcp_bridge.mbt          # MCPToolBridge
 │   └── moon.pkg
-├── rag/                        # RAG 基础（v0.10）
-│   ├── loader.mbt              # Document + TextLoader + SimpleTextLoader
+├── rag/                        # RAG 全链路（v1.0）
+│   ├── loader.mbt              # Document + TextLoader + SimpleTextLoader + MarkdownLoader
 │   ├── splitter.mbt            # TextSplitter + RecursiveCharacterTextSplitter
-│   ├── splitter_wbtest.mbt     # 白盒测试: 3 tests
+│   ├── store.mbt               # InMemoryVectorStore（余弦相似度 + MMR）
+│   ├── embedder.mbt            # Embedder trait + OpenAIEmbedder
+│   ├── retriever.mbt           # Retriever（embedder + vector store）
+│   ├── boxed.mbt               # BoxedEmbedder + BoxedVectorStore
+│   ├── splitter_wbtest.mbt     # 白盒测试: 10 tests
 │   └── moon.pkg
 ├── cmd/
 │   ├── main/                   # CLI 入口（打印版本信息）

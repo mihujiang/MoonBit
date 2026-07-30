@@ -33,7 +33,7 @@ moon run cmd/chat --target js
 ```
 
 ```
-=== moon-agent chat v0.10.0 ===
+=== moon-agent chat v1.0.0 ===
 Endpoint: https://api.deepseek.com | Model: deepseek-chat
 Type /help for commands, /exit to quit
 
@@ -62,7 +62,7 @@ Tokens: in=128 out=24 total=152 | Est. cost: $0.000
 #### 安装
 
 ```bash
-moon add mihujiang/agent@0.10.0
+moon add mihujiang/agent@1.0.0
 ```
 
 #### 最简 LLMChain
@@ -189,7 +189,7 @@ for chunk in chunks {
 ```bash
 moon fmt --check          # 格式检查
 moon build --target js    # 构建
-moon test --target js     # 65 个单元测试
+moon test --target js     # 76 个单元测试
 ```
 
 三目标 CI：native / wasm-gc / js。
@@ -225,7 +225,7 @@ moon run cmd/chat --target js
 ```
 
 ```
-=== moon-agent chat v0.10.0 ===
+=== moon-agent chat v1.0.0 ===
 Endpoint: https://api.deepseek.com | Model: deepseek-chat
 Type /help for commands, /exit to quit
 
@@ -254,7 +254,7 @@ Tokens: in=128 out=24 total=152 | Est. cost: $0.000
 #### Installation
 
 ```bash
-moon add mihujiang/agent@0.10.0
+moon add mihujiang/agent@1.0.0
 ```
 
 #### Minimal LLMChain
@@ -381,7 +381,7 @@ All executables share the same config — configure once, run anywhere.
 ```bash
 moon fmt --check          # format check
 moon build --target js    # build
-moon test --target js     # 65 unit tests
+moon test --target js     # 76 unit tests
 ```
 
 Three-target CI matrix: native / wasm-gc / js.
