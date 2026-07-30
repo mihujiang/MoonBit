@@ -39,4 +39,4 @@
 /// ## License
 ///
 /// Apache-2.0
-pub let version : String = "0.9.0"
+pub let version : String = "1.0.0"

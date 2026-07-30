@@ -11,7 +11,7 @@
 
 name = "mihujiang/agent"
 
-version = "0.9.0"
+version = "1.0.0"
 
 readme = "README.mbt.md"
 

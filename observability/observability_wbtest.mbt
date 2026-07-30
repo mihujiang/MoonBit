@@ -136,3 +136,41 @@ test "TimingTracker records and averages" {
   t.record("datetime", 50.0)
   inspect(t.total_calls(), content="3")
 }
+
+///|
+test "ErrorLogger starts empty" {
+  let l = ErrorLogger::new()
+  inspect(l.total_errors(), content="0")
+  inspect(l.format(), content="No errors logged this session.")
+}
+
+///|
+test "ErrorLogger logs and counts by code" {
+  let l = ErrorLogger::new()
+  l.log_config_not_found(".env not found")
+  l.log_api_error("429 Too Many Requests", "rate limit exceeded")
+  l.log_api_error("401 Unauthorized", "invalid key")
+  inspect(l.total_errors(), content="3")
+  inspect(l.count(ConfigNotFound), content="1")
+  inspect(l.count(ApiError), content="2")
+  inspect(l.count(ToolError), content="0")
+}
+
+///|
+test "ErrorLogger clear resets everything" {
+  let l = ErrorLogger::new()
+  l.log_config_not_found("test")
+  l.log_api_error("test", "ctx")
+  l.clear()
+  inspect(l.total_errors(), content="0")
+}
+
+///|
+test "ErrorLogger format includes all entries" {
+  let l = ErrorLogger::new()
+  l.log_tool_error("calculator", "division by zero")
+  let formatted = l.format()
+  assert_true(formatted.has_prefix("Error Report"))
+  assert_true(formatted.contains("TOOL_ERROR"))
+  assert_true(formatted.contains("calculator"))
+}

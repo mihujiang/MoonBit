@@ -5,7 +5,7 @@
 [![CI](https://github.com/mihujiang/MoonBit/actions/workflows/ci.yml/badge.svg)](https://github.com/mihujiang/MoonBit/actions)
 [![mooncakes](https://img.shields.io/badge/mooncakes-mihujiang%2Fagent-blue)](https://mooncakes.io/docs/mihujiang/agent)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.10.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.10.0)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v1.0.0)
 
 ---
 
@@ -28,7 +28,7 @@
 - **可组合单元**：`RunnableWrapper[I,O]` —— LCEL 式管道组合（`pipe`）/ 输出变换（`map`）
 - **多链编排**：`SequentialChain[T]` —— 同质多步骤链，顺序执行并传递输出
 - **可观测性**：`UsageTracker`（Token 统计 + 成本估算）、`CallTrace`（Agent 决策链路追踪）、`TimingTracker`（工具耗时统计）
-- **RAG 基础**：`Document` + `TextLoader` + `RecursiveCharacterTextSplitter`
+- **RAG 检索**：`Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` + MMR 多样性检索
 - **交互式 CLI**：`cmd/chat` REPL —— 多轮对话、工具调用可视化、斜杠命令（`/help` `/usage` `/clear`）
 - **统一配置**：`.env` / `config.json` / 环境变量，一处配置全局生效
 - **MCP 协议**：`MCPClient` / `MCPServer` 双向桥接
@@ -51,7 +51,7 @@
                     你的 MoonBit 应用
                           │
                     ┌─────┴─────┐
-                    │  moon-agent │  ← 本库（11 个子包，65 个测试）
+                    │  moon-agent │  ← 本库（11 个子包，76 个测试）
                     └─────┬─────┘
                           │
         ┌─────┬─────┬─────┼─────┬─────┬─────┬─────┐
@@ -70,14 +70,14 @@
 ### 安装
 
 ```bash
-moon add mihujiang/agent@0.10.0
+moon add mihujiang/agent@1.0.0
 ```
 
 这会在 `moon.mod` 中添加：
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "mihujiang/agent@0.10.0",
+  "mihujiang/agent@1.0.0",
 }
 ```
 
@@ -206,14 +206,14 @@ chain.invoke_stream(vars, fn(delta) {
 | `config` | `config.mbt` | `ChatConfig` —— `.env` / `config.json` / env vars 统一加载 |
 | `observability` | `observability.mbt` | `UsageTracker` + `CallTrace` + `TimingTracker` |
 | `mcp` | `mcp_types.mbt`, `mcp_client.mbt`, `mcp_server.mbt`, `mcp_bridge.mbt` | MCP 协议双向桥接 |
-| `rag` | `loader.mbt`, `splitter.mbt` | `Document` + `TextLoader` + `RecursiveCharacterTextSplitter` |
+| `rag` | `loader.mbt`, `splitter.mbt`, `store.mbt`, `embedder.mbt`, `retriever.mbt`, `boxed.mbt` | `Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` |
 | `cmd/chat` | `main.mbt` | 交互式 REPL（多轮对话、工具调用可视化） |
 | `examples/quickstart` | `main.mbt` | 最小 LLMChain 示例 |
 | `examples/react_agent` | `main.mbt` | 自定义 Tool + ReAct Agent 示例 |
 
 ### 测试覆盖
 
-65 个单元测试，三目标（native / wasm-gc / js）全绿：
+76 个单元测试，三目标（native / wasm-gc / js）全绿：
 
 | 测试文件 | 测试数 | 覆盖内容 |
 |---|---|---|
@@ -224,8 +224,8 @@ chain.invoke_stream(vars, fn(delta) {
 | `chains/llm_chain_wbtest.mbt` | 7 | invoke/parse/stream/无parser/无效JSON/向后兼容 |
 | `agents/agent_executor_wbtest.mbt` | 4 | invoke/stream/parse/无parser |
 | `core/core_wbtest.mbt` | 11 | pipe/map/SequentialChain/与wrapper组合 |
-| `observability/observability_wbtest.mbt` | 12 | UsageTracker/CallTrace/TimingTracker |
-| `rag/splitter_wbtest.mbt` | 3 | RecursiveCharacterTextSplitter/SimpleTextLoader |
+| `observability/observability_wbtest.mbt` | 16 | UsageTracker/CallTrace/TimingTracker/ErrorLogger |
+| `rag/splitter_wbtest.mbt` | 10 | RecursiveCharacterTextSplitter/MarkdownLoader/VectorStore/MMR |
 
 ### 工具链
 
@@ -267,7 +267,7 @@ moon info                 # 更新生成接口文件
 - **Composable Units**: `RunnableWrapper[I,O]` — LCEL-style pipeline composition (`pipe`) / output transformation (`map`)
 - **Multi-chain Orchestration**: `SequentialChain[T]` — homogeneous multi-step chains, sequential execution with output passing
 - **Observability**: `UsageTracker` (token stats + cost), `CallTrace` (agent decision trail), `TimingTracker` (tool latency)
-- **RAG Primitives**: `Document` + `TextLoader` + `RecursiveCharacterTextSplitter`
+- **RAG Retrieval**: `Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` + MMR diversity search
 - **Interactive CLI**: `cmd/chat` REPL — multi-turn conversations, tool call visualization, slash commands
 - **Unified Config**: `.env` / `config.json` / env vars — configure once, run anywhere
 - **MCP Protocol**: `MCPClient` / `MCPServer` bidirectional bridge
@@ -290,7 +290,7 @@ moon info                 # 更新生成接口文件
                    Your MoonBit Application
                           │
                     ┌─────┴─────┐
-                    │  moon-agent │  ← This library (11 sub-packages, 65 tests)
+                    │  moon-agent │  ← This library (11 sub-packages, 76 tests)
                     └─────┬─────┘
                           │
         ┌─────┬─────┬─────┼─────┬─────┬─────┬─────┐
@@ -309,14 +309,14 @@ moon info                 # 更新生成接口文件
 ### Installation
 
 ```bash
-moon add mihujiang/agent@0.10.0
+moon add mihujiang/agent@1.0.0
 ```
 
 This adds to your `moon.mod`:
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "mihujiang/agent@0.10.0",
+  "mihujiang/agent@1.0.0",
 }
 ```
 
@@ -414,14 +414,14 @@ chain.invoke_stream(vars, fn(delta) {
 | `config` | `config.mbt` | `ChatConfig` — `.env` / `config.json` / env vars unified loading |
 | `observability` | `observability.mbt` | `UsageTracker` + `CallTrace` + `TimingTracker` |
 | `mcp` | 4 files | MCP protocol bidirectional bridge |
-| `rag` | `loader.mbt`, `splitter.mbt` | `Document` + `TextLoader` + `RecursiveCharacterTextSplitter` |
+| `rag` | `loader.mbt`, `splitter.mbt`, `store.mbt`, `embedder.mbt`, `retriever.mbt`, `boxed.mbt` | `Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` |
 | `cmd/chat` | `main.mbt` | Interactive REPL (multi-turn, tool visualization) |
 | `examples/quickstart` | `main.mbt` | Minimal LLMChain example |
 | `examples/react_agent` | `main.mbt` | Custom Tool + ReAct Agent example |
 
 ### Test Coverage
 
-65 unit tests, all green across three targets (native / wasm-gc / js):
+76 unit tests, all green across three targets (native / wasm-gc / js):
 
 | Test File | Tests | Coverage |
 |---|---|---|
@@ -432,8 +432,8 @@ chain.invoke_stream(vars, fn(delta) {
 | `chains/llm_chain_wbtest.mbt` | 7 | invoke / parse / stream / no parser / invalid JSON / backward compat |
 | `agents/agent_executor_wbtest.mbt` | 4 | invoke / stream / parse / no parser |
 | `core/core_wbtest.mbt` | 11 | pipe / map / SequentialChain / wrapper composition |
-| `observability/observability_wbtest.mbt` | 12 | UsageTracker / CallTrace / TimingTracker |
-| `rag/splitter_wbtest.mbt` | 3 | RecursiveCharacterTextSplitter / SimpleTextLoader |
+| `observability/observability_wbtest.mbt` | 16 | UsageTracker / CallTrace / TimingTracker / ErrorLogger |
+| `rag/splitter_wbtest.mbt` | 10 | RecursiveCharacterTextSplitter / MarkdownLoader / VectorStore / MMR |
 
 ### Links
 

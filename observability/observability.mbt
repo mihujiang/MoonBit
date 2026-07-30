@@ -298,3 +298,189 @@ pub fn TimingTracker::format(self : TimingTracker) -> String {
   }
   buf
 }
+
+///|
+/// Structured error logging with error codes, context, and suggested fixes.
+/// Use cell array pattern so mutations persist across MoonBit's value-passing semantics.
+
+///|
+/// Error code categories for structured logging.
+pub(all) enum ErrorCode {
+  ConfigNotFound
+  ApiError
+  ToolError
+  ParseError
+  ValidationError
+  MemoryError
+  NetworkError
+}
+
+///|
+/// A single error entry with full context.
+pub struct ErrorEntry {
+  code : ErrorCode
+  message : String
+  context : String
+  suggestion : String
+}
+
+///|
+pub fn ErrorEntry::new(
+  code : ErrorCode,
+  message : String,
+  context : String,
+  suggestion : String,
+) -> ErrorEntry {
+  { code, message, context, suggestion }
+}
+
+///|
+/// Format an error entry for display.
+pub fn ErrorEntry::format(self : ErrorEntry) -> String {
+  let code_str = match self.code {
+    ConfigNotFound => "CONFIG_NOT_FOUND"
+    ApiError => "API_ERROR"
+    ToolError => "TOOL_ERROR"
+    ParseError => "PARSE_ERROR"
+    ValidationError => "VALIDATION_ERROR"
+    MemoryError => "MEMORY_ERROR"
+    NetworkError => "NETWORK_ERROR"
+  }
+  "[" +
+  code_str +
+  "] " +
+  self.message +
+  "\n  Context: " +
+  self.context +
+  "\n  Suggestion: " +
+  self.suggestion
+}
+
+///|
+/// Structured error logger with entries and analytics.
+pub struct ErrorLogger {
+  entries : Array[ErrorEntry]
+  counts : Array[Int] // [config, api, tool, parse, validation, memory, network]
+  session_total : Array[Int] // cell[0] = total
+}
+
+///|
+pub fn ErrorLogger::new() -> ErrorLogger {
+  { entries: [], counts: [0, 0, 0, 0, 0, 0, 0], session_total: [0] }
+}
+
+///|
+/// Log an error to the logger.
+pub fn ErrorLogger::log(
+  self : ErrorLogger,
+  code : ErrorCode,
+  message : String,
+  context : String,
+  suggestion : String,
+) -> Unit {
+  let entry = ErrorEntry::new(code, message, context, suggestion)
+  self.entries.push(entry)
+  let idx = ErrorLogger::code_index(code)
+  self.counts[idx] = self.counts[idx] + 1
+  self.session_total[0] = self.session_total[0] + 1
+}
+
+///|
+fn ErrorLogger::code_index(code : ErrorCode) -> Int {
+  match code {
+    ConfigNotFound => 0
+    ApiError => 1
+    ToolError => 2
+    ParseError => 3
+    ValidationError => 4
+    MemoryError => 5
+    NetworkError => 6
+  }
+}
+
+///|
+/// Total errors logged this session.
+pub fn ErrorLogger::total_errors(self : ErrorLogger) -> Int {
+  self.session_total[0]
+}
+
+///|
+/// Count of errors for a specific code.
+pub fn ErrorLogger::count(self : ErrorLogger, code : ErrorCode) -> Int {
+  self.counts[ErrorLogger::code_index(code)]
+}
+
+///|
+/// Get all logged entries.
+pub fn ErrorLogger::entries(self : ErrorLogger) -> Array[ErrorEntry] {
+  self.entries
+}
+
+///|
+/// Clear all logged errors.
+pub fn ErrorLogger::clear(self : ErrorLogger) -> Unit {
+  self.entries.clear()
+  for i = 0; i < self.counts.length(); i = i + 1 {
+    self.counts[i] = 0
+  }
+  self.session_total[0] = 0
+}
+
+///|
+/// Format all errors as a summary report.
+pub fn ErrorLogger::format(self : ErrorLogger) -> String {
+  if self.session_total[0] == 0 {
+    return "No errors logged this session."
+  }
+  let mut buf = "Error Report (" +
+    self.session_total[0].to_string() +
+    " total):\n"
+  for i = 0; i < self.entries.length(); i = i + 1 {
+    buf = buf + "  " + self.entries[i].format() + "\n"
+  }
+  buf
+}
+
+///|
+/// Convenience: log a config not found error.
+pub fn ErrorLogger::log_config_not_found(
+  self : ErrorLogger,
+  context : String,
+) -> Unit {
+  self.log(
+    ConfigNotFound,
+    "Configuration not found",
+    context,
+    "Create a .env file with OPENAI_API_KEY=sk-... or set the environment variable.",
+  )
+}
+
+///|
+/// Convenience: log an API error.
+pub fn ErrorLogger::log_api_error(
+  self : ErrorLogger,
+  message : String,
+  context : String,
+) -> Unit {
+  self.log(
+    ApiError,
+    message,
+    context,
+    "Check your API key, network connection, and endpoint URL. Verify the API provider status page.",
+  )
+}
+
+///|
+/// Convenience: log a tool execution error.
+pub fn ErrorLogger::log_tool_error(
+  self : ErrorLogger,
+  tool_name : String,
+  message : String,
+) -> Unit {
+  self.log(
+    ToolError,
+    "Tool '" + tool_name + "' failed: " + message,
+    "Tool execution",
+    "Review the tool input parameters and ensure required dependencies are available.",
+  )
+}
