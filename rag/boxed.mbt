@@ -16,7 +16,10 @@ pub fn BoxedEmbedder::new(inner : &Embedder) -> BoxedEmbedder {
 }
 
 ///|
-pub fn BoxedEmbedder::embed(self : BoxedEmbedder, text : String) -> Array[Double] {
+pub fn BoxedEmbedder::embed(
+  self : BoxedEmbedder,
+  text : String,
+) -> Array[Double] {
   self.inner.embed(text)
 }
 
@@ -65,9 +68,6 @@ pub fn BoxedVectorStore::search_max_marginal_relevance(
   lambda_mult : Double,
 ) -> Array[String] {
   self.inner.search_max_marginal_relevance(
-    query_embedding,
-    k,
-    fetch_k,
-    lambda_mult,
+    query_embedding, k, fetch_k, lambda_mult,
   )
 }

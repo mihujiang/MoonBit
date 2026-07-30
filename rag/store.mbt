@@ -24,7 +24,13 @@ pub fn EmbeddedDocument::new(
 /// and similarity search.
 pub(open) trait VectorStore {
   fn add(Self, docs : Array[EmbeddedDocument]) -> Unit
-  fn search_max_marginal_relevance(Self, query_embedding : Array[Double], k : Int, fetch_k : Int, lambda_mult : Double) -> Array[String]
+  fn search_max_marginal_relevance(
+    Self,
+    query_embedding : Array[Double],
+    k : Int,
+    fetch_k : Int,
+    lambda_mult : Double,
+  ) -> Array[String]
   fn search(Self, query_embedding : Array[Double], k : Int) -> Array[String]
 }
 
@@ -176,7 +182,8 @@ fn InMemoryVectorStore::mmr_select(
           max_sim_to_selected = sim
         }
       }
-      let mmr = lambda_mult * query_sim - (1.0 - lambda_mult) * max_sim_to_selected
+      let mmr = lambda_mult * query_sim -
+        (1.0 - lambda_mult) * max_sim_to_selected
       if mmr > best_score {
         best_score = mmr
         best_idx = candidates[i].0

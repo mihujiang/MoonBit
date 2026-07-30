@@ -35,9 +35,7 @@ pub fn Retriever::add_documents(
   let embedded_docs : Array[EmbeddedDocument] = []
   for i = 0; i < docs.length(); i = i + 1 {
     if i < embeddings.length() {
-      embedded_docs.push(
-        EmbeddedDocument::new(docs[i].content, embeddings[i]),
-      )
+      embedded_docs.push(EmbeddedDocument::new(docs[i].content, embeddings[i]))
     }
   }
   if embedded_docs.length() > 0 {
@@ -73,9 +71,6 @@ pub fn Retriever::retrieve_mmr(
     return []
   }
   self.store.search_max_marginal_relevance(
-    query_embedding,
-    k,
-    fetch_k,
-    lambda_mult,
+    query_embedding, k, fetch_k, lambda_mult,
   )
 }
