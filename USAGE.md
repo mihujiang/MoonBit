@@ -33,7 +33,7 @@ moon run cmd/chat --target js
 ```
 
 ```
-=== moon-agent chat v0.3.0 ===
+=== moon-agent chat v0.3.1 ===
 Endpoint: https://api.deepseek.com | Model: deepseek-chat
 Type /help for commands, /exit to quit
 
@@ -62,7 +62,7 @@ Tokens: in=128 out=24 total=152 | Est. cost: $0.000
 #### 安装
 
 ```bash
-moon add weopqrst/agent@0.3.0
+moon add weopqrst/agent@0.3.1
 ```
 
 #### 最简 LLMChain
@@ -225,7 +225,7 @@ moon run cmd/chat --target js
 ```
 
 ```
-=== moon-agent chat v0.3.0 ===
+=== moon-agent chat v0.3.1 ===
 Endpoint: https://api.deepseek.com | Model: deepseek-chat
 Type /help for commands, /exit to quit
 
@@ -254,7 +254,7 @@ Tokens: in=128 out=24 total=152 | Est. cost: $0.000
 #### Installation
 
 ```bash
-moon add weopqrst/agent@0.3.0
+moon add weopqrst/agent@0.3.1
 ```
 
 #### Minimal LLMChain

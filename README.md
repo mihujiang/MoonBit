@@ -5,7 +5,7 @@
 [![CI](https://github.com/mihujiang/MoonBit/actions/workflows/ci.yml/badge.svg)](https://github.com/mihujiang/MoonBit/actions)
 [![mooncakes](https://img.shields.io/badge/mooncakes-weopqrst%2Fagent-blue)](https://mooncakes.io/docs/weopqrst/agent)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.3.0)
+[![Version](https://img.shields.io/badge/version-0.3.1-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.3.1)
 
 ---
 
@@ -70,14 +70,14 @@
 ### 安装
 
 ```bash
-moon add weopqrst/agent@0.3.0
+moon add weopqrst/agent@0.3.1
 ```
 
 这会在 `moon.mod` 中添加：
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "weopqrst/agent@0.3.0",
+  "weopqrst/agent@0.3.1",
 }
 ```
 
@@ -111,6 +111,37 @@ OPENAI_MODEL=deepseek-chat
 3. `../.env`（子目录如 `cmd/chat` 运行时）
 4. `../config.json`
 5. 环境变量回退
+
+### 交互式 REPL（cmd/chat）
+
+配置好 API 后，直接启动多轮对话 REPL：
+
+```bash
+moon run cmd/chat --target js
+```
+
+```
+=== moon-agent chat v0.3.1 ===
+Endpoint: https://api.deepseek.com | Model: deepseek-chat
+Type /help for commands, /exit to quit
+
+You: 15 * 23 + 100 等于多少？
+Agent:
+  [→ calling tool: calculator] input: {"expression":"15*23+100"}
+  [← calculator result] 445
+445
+Tokens: in=128 out=24 total=152 | Est. cost: $0.000
+```
+
+REPL 斜杠命令：
+
+| 命令 | 功能 |
+|---|---|
+| `/exit`, `/quit` | 退出 |
+| `/help` | 查看命令 |
+| `/tools` | 列出内置工具 |
+| `/clear` | 清除对话记忆 |
+| `/usage` | 查看 Token 用量和费用 |
 
 ### 快速开始（5 分钟）
 
@@ -309,16 +340,47 @@ moon info                 # 更新生成接口文件
 ### Installation
 
 ```bash
-moon add weopqrst/agent@0.3.0
+moon add weopqrst/agent@0.3.1
 ```
 
 This adds to your `moon.mod`:
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "weopqrst/agent@0.3.0",
+  "weopqrst/agent@0.3.1",
 }
 ```
+
+### Interactive REPL (cmd/chat)
+
+After configuring the API, start the multi-turn chat REPL directly:
+
+```bash
+moon run cmd/chat --target js
+```
+
+```
+=== moon-agent chat v0.3.1 ===
+Endpoint: https://api.deepseek.com | Model: deepseek-chat
+Type /help for commands, /exit to quit
+
+You: What is 15 * 23 + 100?
+Agent:
+  [→ calling tool: calculator] input: {"expression":"15*23+100"}
+  [← calculator result] 445
+445
+Tokens: in=128 out=24 total=152 | Est. cost: $0.000
+```
+
+REPL slash commands:
+
+| Command | Action |
+|---|---|
+| `/exit`, `/quit` | Exit |
+| `/help` | Show commands |
+| `/tools` | List built-in tools |
+| `/clear` | Clear conversation memory |
+| `/usage` | Show token usage & cost |
 
 ### Quickstart (5 minutes)
 
