@@ -3,10 +3,10 @@ import {
   "mizchi/llm",
   "mizchi/llm/openai",
   "mizchi/llm/tools" @llm_tools,
-  "mihujiang/agent/tools",
-  "mihujiang/agent/config",
-  "mihujiang/agent/observability",
-  "mihujiang/agent/memory",
+  "weopqrst/agent/tools",
+  "weopqrst/agent/config",
+  "weopqrst/agent/observability",
+  "weopqrst/agent/memory",
 }
 
 pkgtype(kind: "executable")

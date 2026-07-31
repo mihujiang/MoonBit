@@ -1,9 +1,9 @@
 import {
   "mizchi/llm",
   "mizchi/llm/openai",
-  "mihujiang/agent/prompts",
-  "mihujiang/agent/chains",
-  "mihujiang/agent/config",
+  "weopqrst/agent/prompts",
+  "weopqrst/agent/chains",
+  "weopqrst/agent/config",
 }
 
 pkgtype(kind: "executable")

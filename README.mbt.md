@@ -3,9 +3,9 @@
 > MoonBit 版 LangChain 核心库 —— 类型安全、可组合、可嵌入的 AI Agent 框架
 
 [![CI](https://github.com/mihujiang/MoonBit/actions/workflows/ci.yml/badge.svg)](https://github.com/mihujiang/MoonBit/actions)
-[![mooncakes](https://img.shields.io/badge/mooncakes-mihujiang%2Fagent-blue)](https://mooncakes.io/docs/mihujiang/agent)
+[![mooncakes](https://img.shields.io/badge/mooncakes-weopqrst%2Fagent-blue)](https://mooncakes.io/docs/weopqrst/agent)
 [![License](https://img.shields.io/badge/license-Apache--2.0-green)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v1.0.0)
+[![Version](https://img.shields.io/badge/version-0.3.0-blue)](https://github.com/mihujiang/MoonBit/releases/tag/v0.3.0)
 
 ---
 
@@ -70,14 +70,14 @@
 ### 安装
 
 ```bash
-moon add mihujiang/agent@1.0.0
+moon add weopqrst/agent@0.3.0
 ```
 
 这会在 `moon.mod` 中添加：
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "mihujiang/agent@1.0.0",
+  "weopqrst/agent@0.3.0",
 }
 ```
 
@@ -241,7 +241,7 @@ moon info                 # 更新生成接口文件
 ### 相关链接
 
 - 仓库：<https://github.com/mihujiang/MoonBit>
-- mooncakes：<https://mooncakes.io/docs/mihujiang/agent>
+- mooncakes：<https://mooncakes.io/docs/weopqrst/agent>
 - LLM 依赖：<https://mooncakes.io/docs/mizchi/llm>
 - 使用指南：[USAGE.md](USAGE.md)（GitHub 友好版本）
 - 项目进度：参见仓库 `MoonBit/` 目录下的 commit 历史
@@ -309,14 +309,14 @@ moon info                 # 更新生成接口文件
 ### Installation
 
 ```bash
-moon add mihujiang/agent@1.0.0
+moon add weopqrst/agent@0.3.0
 ```
 
 This adds to your `moon.mod`:
 ```toml
 import {
   "mizchi/llm@0.3.1",
-  "mihujiang/agent@1.0.0",
+  "weopqrst/agent@0.3.0",
 }
 ```
 
@@ -438,7 +438,7 @@ chain.invoke_stream(vars, fn(delta) {
 ### Links
 
 - Repository: <https://github.com/mihujiang/MoonBit>
-- mooncakes: <https://mooncakes.io/docs/mihujiang/agent>
+- mooncakes: <https://mooncakes.io/docs/weopqrst/agent>
 - LLM dependency: <https://mooncakes.io/docs/mizchi/llm>
 - Usage Guide: [USAGE.md](USAGE.md)
 - Project Progress: See commit history under `MoonBit/`

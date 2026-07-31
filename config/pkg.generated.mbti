@@ -1,0 +1,30 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/config"
+
+// Values
+pub fn load_config() -> ChatConfig?
+
+pub fn load_config_from_env_file(String) -> ChatConfig?
+
+pub fn load_config_from_file(String) -> ChatConfig?
+
+pub fn load_config_or_abort() -> ChatConfig
+
+pub fn read_file_to_string(String) -> String
+
+// Errors
+
+// Types and methods
+pub struct ChatConfig {
+  api_key : String
+  base_url : String
+  model : String
+  max_tokens : Int
+  system_prompt : String
+}
+pub fn ChatConfig::default() -> Self
+
+// Type aliases
+
+// Traits
+

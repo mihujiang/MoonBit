@@ -1,0 +1,106 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/rag"
+
+// Values
+pub fn[T : TextSplitter] split_documents(T, Array[Document]) -> Array[Document]
+
+// Errors
+
+// Types and methods
+pub struct BoxedEmbedder {
+  inner : &Embedder
+}
+pub fn BoxedEmbedder::embed(Self, String) -> Array[Double]
+pub fn BoxedEmbedder::embed_batch(Self, Array[String]) -> Array[Array[Double]]
+pub fn BoxedEmbedder::new(&Embedder) -> Self
+
+pub struct BoxedVectorStore {
+  inner : &VectorStore
+}
+pub fn BoxedVectorStore::add(Self, Array[EmbeddedDocument]) -> Unit
+pub fn BoxedVectorStore::new(&VectorStore) -> Self
+pub fn BoxedVectorStore::search(Self, Array[Double], Int) -> Array[String]
+pub fn BoxedVectorStore::search_max_marginal_relevance(Self, Array[Double], Int, Int, Double) -> Array[String]
+
+pub struct Document {
+  content : String
+  metadata : Map[String, String]
+}
+pub fn Document::new(String) -> Self
+pub fn Document::with_meta(Self, String, String) -> Self
+
+pub(all) struct EmbeddedDocument {
+  content : String
+  embedding : Array[Double]
+}
+pub fn EmbeddedDocument::new(String, Array[Double]) -> Self
+
+pub struct InMemoryVectorStore {
+  store : Array[EmbeddedDocument]
+}
+pub fn InMemoryVectorStore::new() -> Self
+pub impl VectorStore for InMemoryVectorStore
+
+pub struct MarkdownLoader {
+  text : String
+  source_name : String
+}
+pub fn MarkdownLoader::new(String, String) -> Self
+pub impl TextLoader for MarkdownLoader
+
+pub struct OpenAIEmbedder {
+  model : String
+  api_key : String
+  base_url : String
+}
+pub fn OpenAIEmbedder::new(String, model~ : String, base_url~ : String) -> Self
+pub fn OpenAIEmbedder::openai_default(String) -> Self
+pub impl Embedder for OpenAIEmbedder
+
+pub struct RecursiveCharacterTextSplitter {
+  chunk_size : Int
+  chunk_overlap : Int
+  separators : Array[String]
+}
+pub fn RecursiveCharacterTextSplitter::new(Int, Int) -> Self
+pub fn RecursiveCharacterTextSplitter::with_separators(Self, Array[String]) -> Self
+pub impl TextSplitter for RecursiveCharacterTextSplitter
+
+pub struct Retriever {
+  embedder : BoxedEmbedder
+  store : BoxedVectorStore
+}
+pub fn Retriever::add_documents(Self, Array[Document]) -> Unit
+pub fn Retriever::new(BoxedEmbedder, BoxedVectorStore) -> Self
+pub fn Retriever::retrieve(Self, String, Int) -> Array[String]
+pub fn Retriever::retrieve_mmr(Self, String, Int, Int, Double) -> Array[String]
+
+pub struct SimpleTextLoader {
+  text : String
+  source_name : String
+}
+pub fn SimpleTextLoader::new(String, String) -> Self
+pub impl TextLoader for SimpleTextLoader
+
+// Type aliases
+
+// Traits
+pub(open) trait Embedder {
+  fn embed(Self, String) -> Array[Double]
+  fn embed_batch(Self, Array[String]) -> Array[Array[Double]]
+}
+
+pub(open) trait TextLoader {
+  fn load(Self) -> Array[Document]
+}
+
+pub(open) trait TextSplitter {
+  fn split_text(Self, String) -> Array[String]
+}
+
+pub(open) trait VectorStore {
+  fn add(Self, Array[EmbeddedDocument]) -> Unit
+  fn search_max_marginal_relevance(Self, Array[Double], Int, Int, Double) -> Array[String]
+  fn search(Self, Array[Double], Int) -> Array[String]
+}
+

@@ -1,6 +1,6 @@
 import {
   "mizchi/llm",
   "mizchi/llm/tools" @llm_tools,
-  "mihujiang/agent/memory",
-  "mihujiang/agent/parsers",
+  "weopqrst/agent/memory",
+  "weopqrst/agent/parsers",
 }

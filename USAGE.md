@@ -33,7 +33,7 @@ moon run cmd/chat --target js
 ```
 
 ```
-=== moon-agent chat v1.0.0 ===
+=== moon-agent chat v0.3.0 ===
 Endpoint: https://api.deepseek.com | Model: deepseek-chat
 Type /help for commands, /exit to quit
 
@@ -62,7 +62,7 @@ Tokens: in=128 out=24 total=152 | Est. cost: $0.000
 #### 安装
 
 ```bash
-moon add mihujiang/agent@1.0.0
+moon add weopqrst/agent@0.3.0
 ```
 
 #### 最简 LLMChain
@@ -225,7 +225,7 @@ moon run cmd/chat --target js
 ```
 
 ```
-=== moon-agent chat v1.0.0 ===
+=== moon-agent chat v0.3.0 ===
 Endpoint: https://api.deepseek.com | Model: deepseek-chat
 Type /help for commands, /exit to quit
 
@@ -254,7 +254,7 @@ Tokens: in=128 out=24 total=152 | Est. cost: $0.000
 #### Installation
 
 ```bash
-moon add mihujiang/agent@1.0.0
+moon add weopqrst/agent@0.3.0
 ```
 
 #### Minimal LLMChain
@@ -391,5 +391,5 @@ Three-target CI matrix: native / wasm-gc / js.
 ## Links / 链接
 
 - Repository / 仓库：<https://github.com/mihujiang/MoonBit>
-- mooncakes：<https://mooncakes.io/docs/mihujiang/agent>
+- mooncakes：<https://mooncakes.io/docs/weopqrst/agent>
 - LLM dependency / 依赖：<https://mooncakes.io/docs/mizchi/llm>

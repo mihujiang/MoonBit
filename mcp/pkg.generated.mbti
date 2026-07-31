@@ -1,0 +1,64 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/mcp"
+
+import {
+  "weopqrst/agent/tools",
+}
+
+// Values
+pub fn call_tool_request(Int, String, Json) -> MCPRequest
+
+pub fn initialize_request(Int) -> MCPRequest
+
+pub fn list_tools_request(Int) -> MCPRequest
+
+pub fn parse_response(String) -> Result[Json, String]
+
+pub fn parse_tool_list(Json) -> Result[Array[MCPToolDef], String]
+
+// Errors
+
+// Types and methods
+pub struct MCPClient {
+  transport : (String) -> String
+  mut next_id : Int
+}
+pub fn MCPClient::bridge_for(Self, String) -> (Json) -> String
+pub fn MCPClient::call_tool(Self, String, Json) -> Result[Json, String]
+pub fn MCPClient::initialize(Self) -> Result[Json, String]
+pub fn MCPClient::list_tools(Self) -> Result[Array[MCPToolDef], String]
+pub fn MCPClient::new((String) -> String) -> Self
+
+type MCPRequest
+pub fn MCPRequest::to_json(Self) -> String
+
+pub struct MCPServer {
+  name : String
+  version : String
+  tools : Array[MCPToolDef]
+  tool_handlers : Map[String, (Json) -> String]
+}
+pub fn MCPServer::handle_request(Self, String, (String) -> Unit) -> Unit
+pub fn MCPServer::new(String, String) -> Self
+pub fn[T : @tools.Tool] MCPServer::register_tool(Self, T) -> Self
+pub fn MCPServer::tool_count(Self) -> Int
+
+pub struct MCPToolBridge {
+  tool_name : String
+  tool_description : String
+  tool_schema : Json
+  call : (Json) -> String
+}
+pub fn MCPToolBridge::new(String, String, Json, (Json) -> String) -> Self
+pub impl @tools.Tool for MCPToolBridge
+
+pub struct MCPToolDef {
+  name : String
+  description : String
+  inputSchema : Json
+}
+
+// Type aliases
+
+// Traits
+

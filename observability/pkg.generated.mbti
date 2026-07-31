@@ -1,0 +1,90 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "weopqrst/agent/observability"
+
+import {
+  "mizchi/llm",
+}
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct CallTrace {
+  steps : Array[TraceStep]
+  current_text : Array[String]
+}
+pub fn CallTrace::format(Self) -> String
+pub fn CallTrace::new() -> Self
+pub fn CallTrace::record(Self, @llm.AgentEvent) -> Unit
+pub fn CallTrace::step_count(Self) -> Int
+
+pub(all) enum ErrorCode {
+  ConfigNotFound
+  ApiError
+  ToolError
+  ParseError
+  ValidationError
+  MemoryError
+  NetworkError
+}
+
+pub struct ErrorEntry {
+  code : ErrorCode
+  message : String
+  context : String
+  suggestion : String
+}
+pub fn ErrorEntry::format(Self) -> String
+pub fn ErrorEntry::new(ErrorCode, String, String, String) -> Self
+
+pub struct ErrorLogger {
+  entries : Array[ErrorEntry]
+  counts : Array[Int]
+  session_total : Array[Int]
+}
+pub fn ErrorLogger::clear(Self) -> Unit
+pub fn ErrorLogger::count(Self, ErrorCode) -> Int
+pub fn ErrorLogger::entries(Self) -> Array[ErrorEntry]
+pub fn ErrorLogger::format(Self) -> String
+pub fn ErrorLogger::log(Self, ErrorCode, String, String, String) -> Unit
+pub fn ErrorLogger::log_api_error(Self, String, String) -> Unit
+pub fn ErrorLogger::log_config_not_found(Self, String) -> Unit
+pub fn ErrorLogger::log_tool_error(Self, String, String) -> Unit
+pub fn ErrorLogger::new() -> Self
+pub fn ErrorLogger::total_errors(Self) -> Int
+
+pub struct TimingTracker {
+  total_ms : Map[String, Float]
+  counts : Map[String, Int]
+  tool_names : Array[String]
+}
+pub fn TimingTracker::avg_ms(Self, String) -> Float
+pub fn TimingTracker::format(Self) -> String
+pub fn TimingTracker::new() -> Self
+pub fn TimingTracker::record(Self, String, Float) -> Unit
+pub fn TimingTracker::total_calls(Self) -> Int
+
+pub(all) enum TraceStep {
+  ToolCall(String, String, String, Bool)
+  AgentText(String)
+  AgentError(String)
+}
+
+pub struct UsageTracker {
+  cell : Array[Int]
+}
+pub fn UsageTracker::estimated_cost(Self, Float, Float) -> Float
+pub fn UsageTracker::estimated_cost_deepseek(Self) -> Float
+pub fn UsageTracker::format(Self) -> String
+pub fn UsageTracker::input_tokens(Self) -> Int
+pub fn UsageTracker::new() -> Self
+pub fn UsageTracker::output_tokens(Self) -> Int
+pub fn UsageTracker::record(Self, @llm.AgentEvent) -> Unit
+pub fn UsageTracker::reset(Self) -> Unit
+pub fn UsageTracker::total_tokens(Self) -> Int
+
+// Type aliases
+
+// Traits
+

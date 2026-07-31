@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mihujiang/agent"
+package "weopqrst/agent"
 
 // Values
 pub let version : String

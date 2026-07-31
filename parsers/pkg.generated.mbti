@@ -1,5 +1,5 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mihujiang/agent/parsers"
+package "weopqrst/agent/parsers"
 
 // Values
 pub fn strip_code_fence(String) -> String

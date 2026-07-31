@@ -9,9 +9,9 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "mihujiang/agent"
+name = "weopqrst/agent"
 
-version = "1.0.0"
+version = "0.3.0"
 
 readme = "README.mbt.md"
 

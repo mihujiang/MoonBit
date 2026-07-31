@@ -1,11 +1,11 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mihujiang/agent/agents"
+package "weopqrst/agent/agents"
 
 import {
-  "mihujiang/agent/memory",
-  "mihujiang/agent/parsers",
   "mizchi/llm",
   "mizchi/llm/tools",
+  "weopqrst/agent/memory",
+  "weopqrst/agent/parsers",
 }
 
 // Values

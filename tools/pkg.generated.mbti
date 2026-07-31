@@ -1,16 +1,22 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "mihujiang/agent/tools"
+package "weopqrst/agent/tools"
 
 // Values
 pub fn param(String, String) -> Json
 
 pub fn[T : Tool] register_into(@mizchi/llm/tools.ToolRegistry, T) -> Unit
 
+pub fn[T] retry_tool(() -> T, Int) -> RetryWrapper[T]
+
 pub fn[T : Tool] to_tool_def(T) -> @mizchi/llm/tools.ToolDef
 
 pub fn tool_schema(String, String, String) -> Json
 
 pub fn tool_schema_no_params() -> Json
+
+pub fn with_retry(Int, (Json) -> String) -> (Json) -> String
+
+pub fn with_timeout_ms(Int, (Json) -> String) -> (Json) -> String
 
 // Errors
 
@@ -48,6 +54,24 @@ pub fn HttpTool::name(Self) -> String
 pub fn HttpTool::new((String, String, String, String) -> String) -> Self
 pub fn HttpTool::run(Self, Json) -> String
 pub impl Tool for HttpTool
+
+type RetryWrapper[T]
+pub impl[T : Tool] Tool for RetryWrapper[T]
+
+type ShellTool
+pub fn ShellTool::args_schema(Self) -> Json
+pub fn ShellTool::description(Self) -> String
+pub fn ShellTool::name(Self) -> String
+pub fn ShellTool::new((String) -> String) -> Self
+pub fn ShellTool::run(Self, Json) -> String
+pub impl Tool for ShellTool
+
+type ToolGuard
+pub fn ToolGuard::allowlist(Array[String]) -> Self
+pub fn ToolGuard::denylist(Array[String]) -> Self
+pub fn ToolGuard::is_allowed(Self, String) -> Bool
+pub fn[T : Tool] ToolGuard::register(Self, @mizchi/llm/tools.ToolRegistry, T) -> Bool
+pub fn ToolGuard::size(Self) -> Int
 
 // Type aliases
 

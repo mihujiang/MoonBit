@@ -7,15 +7,15 @@
 /// This root package provides only metadata. Actual functionality lives in
 /// sub-packages:
 ///
-/// - `mihujiang/agent/core` — `RunnableWrapper[I, O]` struct, the unified composable unit
-/// - `mihujiang/agent/prompts` — `PromptTemplate`, `ChatPromptTemplate`
-/// - `mihujiang/agent/parsers` — `OutputParser`, `JsonOutputParser`
-/// - `mihujiang/agent/memory` — `Memory`, `BufferMemory`, `BufferWindowMemory`, `SummaryMemory`
-/// - `mihujiang/agent/tools` — `Tool` trait, bridge to mizchi/llm's ToolRegistry
-/// - `mihujiang/agent/chains` — `LLMChain`
-/// - `mihujiang/agent/agents` — `AgentExecutor`
-/// - `mihujiang/agent/config` — `ChatConfig`, unified config loader (config.json or env vars)
-/// - `mihujiang/agent/mcp` — MCP Client/Server for ecosystem interop
+/// - `weopqrst/agent/core` — `RunnableWrapper[I, O]` struct, the unified composable unit
+/// - `weopqrst/agent/prompts` — `PromptTemplate`, `ChatPromptTemplate`
+/// - `weopqrst/agent/parsers` — `OutputParser`, `JsonOutputParser`
+/// - `weopqrst/agent/memory` — `Memory`, `BufferMemory`, `BufferWindowMemory`, `SummaryMemory`
+/// - `weopqrst/agent/tools` — `Tool` trait, bridge to mizchi/llm's ToolRegistry
+/// - `weopqrst/agent/chains` — `LLMChain`
+/// - `weopqrst/agent/agents` — `AgentExecutor`
+/// - `weopqrst/agent/config` — `ChatConfig`, unified config loader (config.json or env vars)
+/// - `weopqrst/agent/mcp` — MCP Client/Server for ecosystem interop
 ///
 /// ## Quick start
 ///
@@ -39,4 +39,4 @@
 /// ## License
 ///
 /// Apache-2.0
-pub let version : String = "1.0.0"
+pub let version : String = "0.3.0"

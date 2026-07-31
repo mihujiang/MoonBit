@@ -1,5 +1,5 @@
 import {
-  "mihujiang/agent" @lib,
+  "weopqrst/agent" @lib,
 }
 
 pkgtype(kind: "executable")

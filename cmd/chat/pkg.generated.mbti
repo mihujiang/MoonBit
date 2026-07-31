@@ -1,7 +1,10 @@
 // Generated using `moon info`, DON'T EDIT IT
-package "weopqrst/agent/cmd/main"
+package "weopqrst/agent/cmd/chat"
 
 // Values
+pub fn print(String) -> Unit
+
+pub fn read_line() -> String
 
 // Errors
 

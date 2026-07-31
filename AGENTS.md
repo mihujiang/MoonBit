@@ -126,7 +126,7 @@ MoonBit/
 - `tools` 依赖 `moonbitlang/core/json`, `mizchi/llm/tools`
 - `config` 依赖 `moonbitlang/core/json`, `moonbitlang/core/env`（多目标 FFI）
 - `observability` 依赖 `mizchi/llm`, `moonbitlang/core/json`
-- `mcp` 依赖 `mizchi/llm`, `mizchi/llm/tools`, `mihujiang/agent/tools`
+- `mcp` 依赖 `mizchi/llm`, `mizchi/llm/tools`, `weopqrst/agent/tools`
 - `rag` 无内部依赖
 - `cmd/chat` 依赖 `config`, `observability`, `memory`, `tools`, `mizchi/llm`
 - `core`, `prompts`, `parsers` 无内部依赖，只依赖标准库和 `mizchi/llm`
