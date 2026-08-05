@@ -26,6 +26,7 @@
 ///   /clear          — clear conversation memory
 ///   /usage          — show accumulated token usage & cost
 ///   /trace          — show last turn's decision trail
+///   /errors         — show structured error log
 ///
 /// Built-in tools: calculator, get_current_time (2 in REPL)
 
@@ -45,7 +46,7 @@ fn main {
   let user_input = @env.get_env_var("MOON_AGENT_INPUT")
   match user_input {
     Some(input) => {
-      println("=== moon-agent chat v0.10.0 ===")
+      println("=== moon-agent chat v0.3.1 ===")
       println("Endpoint: " + config.base_url + " | Model: " + config.model)
       println("")
       let provider = build_provider(config)
@@ -56,6 +57,7 @@ fn main {
         @memory.BufferMemory::new(),
         @observability.UsageTracker::new(),
         @observability.CallTrace::new(),
+        @observability.ErrorLogger::new(),
         input,
       )
       return
@@ -104,7 +106,7 @@ fn list_all_tools() -> Unit {
 
 ///|
 fn repl(config : @config.ChatConfig) -> Unit {
-  println("=== moon-agent chat v0.10.0 ===")
+  println("=== moon-agent chat v0.3.1 ===")
   println("Endpoint: " + config.base_url + " | Model: " + config.model)
   println("Type /help for commands, /exit to quit")
   println("")
@@ -113,6 +115,7 @@ fn repl(config : @config.ChatConfig) -> Unit {
   let registry = build_registry()
   let memory = @memory.BufferMemory::new()
   let usage = @observability.UsageTracker::new()
+  let error_logger = @observability.ErrorLogger::new()
 
   while true {
     print("You: ")
@@ -129,6 +132,9 @@ fn repl(config : @config.ChatConfig) -> Unit {
     if trimmed == "/exit" || trimmed == "/quit" {
       println("")
       println(usage.format())
+      if error_logger.total_errors() > 0 {
+        println(error_logger.format())
+      }
       println("Goodbye!")
       break
     }
@@ -149,6 +155,10 @@ fn repl(config : @config.ChatConfig) -> Unit {
       println(usage.format())
       continue
     }
+    if trimmed == "/errors" {
+      println(error_logger.format())
+      continue
+    }
 
     // Chat turn
     let trace = @observability.CallTrace::new()
@@ -157,7 +167,7 @@ fn repl(config : @config.ChatConfig) -> Unit {
       println("(no previous turn to trace)")
       continue
     }
-    chat_turn(provider, registry, memory, usage, trace, trimmed)
+    chat_turn(provider, registry, memory, usage, trace, error_logger, trimmed)
     println("")
   }
 }
@@ -170,6 +180,7 @@ fn show_repl_help() -> Unit {
   println("  /tools          List registered tools")
   println("  /clear          Clear conversation memory")
   println("  /usage          Show token usage & cost")
+  println("  /errors         Show structured error log")
   println("")
   println("Anything else is sent to the AI agent.")
   println("Built-in tools: calculator, get_current_time")
@@ -177,13 +188,14 @@ fn show_repl_help() -> Unit {
 
 ///|
 /// Run a single chat turn with memory persistence, event visibility,
-/// and observability (token usage + call trace).
+/// and observability (token usage + call trace + error logging).
 fn chat_turn(
   provider : @llm.BoxedProvider,
   registry : @llm_tools.ToolRegistry,
   memory : @memory.BufferMemory,
   usage : @observability.UsageTracker,
   trace : @observability.CallTrace,
+  error_logger : @observability.ErrorLogger,
   question : String,
 ) -> Unit {
   // Build messages from memory (preserves conversation history)
@@ -213,7 +225,10 @@ fn chat_turn(
               has_output[0] = true
               response_text[0] = response_text[0] + s
             }
-            @llm.StreamEvent::Error(msg) => println("\n  [API Error] " + msg)
+            @llm.StreamEvent::Error(msg) => {
+              println("\n  [API Error] " + msg)
+              error_logger.log_api_error(msg, "Agent stream error")
+            }
             _ => ()
           }
         @llm.AgentEvent::ToolExecute(name~, input~) =>
@@ -228,6 +243,9 @@ fn chat_turn(
           }
           let tag = if is_error { " (ERROR)" } else { "" }
           println("  [← " + name + " result" + tag + "] " + preview)
+          if is_error {
+            error_logger.log_tool_error(name, result)
+          }
         }
         _ => ()
       }

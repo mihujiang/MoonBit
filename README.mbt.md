@@ -28,7 +28,7 @@
 - **可组合单元**：`RunnableWrapper[I,O]` —— LCEL 式管道组合（`pipe`）/ 输出变换（`map`）
 - **多链编排**：`SequentialChain[T]` —— 同质多步骤链，顺序执行并传递输出
 - **可观测性**：`UsageTracker`（Token 统计 + 成本估算）、`CallTrace`（Agent 决策链路追踪）、`TimingTracker`（工具耗时统计）
-- **RAG 检索**：`Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` + MMR 多样性检索
+- **RAG 检索**：`Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` + MMR 多样性检索 + `RetrievalTool`（Agent 工具版 RAG）
 - **交互式 CLI**：`cmd/chat` REPL —— 多轮对话、工具调用可视化、斜杠命令（`/help` `/usage` `/clear`）
 - **统一配置**：`.env` / `config.json` / 环境变量，一处配置全局生效
 - **MCP 协议**：`MCPClient` / `MCPServer` 双向桥接
@@ -51,7 +51,7 @@
                     你的 MoonBit 应用
                           │
                     ┌─────┴─────┐
-                    │  moon-agent │  ← 本库（11 个子包，76 个测试）
+                    │  moon-agent │  ← 本库（11 个子包，99 个测试）
                     └─────┬─────┘
                           │
         ┌─────┬─────┬─────┼─────┬─────┬─────┬─────┐
@@ -142,6 +142,7 @@ REPL 斜杠命令：
 | `/tools` | 列出内置工具 |
 | `/clear` | 清除对话记忆 |
 | `/usage` | 查看 Token 用量和费用 |
+| `/errors` | 查看错误日志 |
 
 ### 快速开始（5 分钟）
 
@@ -231,11 +232,11 @@ chain.invoke_stream(vars, fn(delta) {
 | `prompts` | `template.mbt`, `chat_prompt.mbt` | `PromptTemplate`（`{var}` 插值）+ `ChatPromptTemplate`（多角色有序消息） |
 | `parsers` | `parser.mbt`, `boxed_parser.mbt` | `OutputParser` trait + `JsonOutputParser` + `BoxedOutputParser` |
 | `memory` | `memory.mbt`, `buffer_memory.mbt`, `summary_memory.mbt`, `boxed_memory.mbt` | `Memory` trait + `BufferMemory` + `BufferWindowMemory` + `SummaryMemory` + `BoxedMemory` |
-| `tools` | `tool.mbt`, `calculator.mbt`, `datetime.mbt`, `http.mbt`, `file_read.mbt`, `file_write.mbt`, `shell.mbt`, `schema.mbt`, `tool_guard.mbt`, `tool_middleware.mbt` | `Tool` trait + 6 个内置工具 + 中间件 |
+| `tools` | `tool.mbt`, `calculator.mbt`, `datetime.mbt`, `http.mbt`, `file_read.mbt`, `file_write.mbt`, `shell.mbt`, `schema.mbt`, `tool_guard.mbt`, `tool_middleware.mbt`, `retrieval_tool.mbt` | `Tool` trait + 6 个内置工具 + 中间件 + RetrievalTool |
 | `chains` | `llm_chain.mbt` | `LLMChain` —— prompt + provider + memory + output_parser + 流式 |
 | `agents` | `agent_executor.mbt` | `AgentExecutor` —— ReAct Agent 循环 + memory + output_parser + 流式 |
 | `config` | `config.mbt` | `ChatConfig` —— `.env` / `config.json` / env vars 统一加载 |
-| `observability` | `observability.mbt` | `UsageTracker` + `CallTrace` + `TimingTracker` |
+| `observability` | `observability.mbt` | `UsageTracker` + `CallTrace` + `TimingTracker` + `ErrorLogger` |
 | `mcp` | `mcp_types.mbt`, `mcp_client.mbt`, `mcp_server.mbt`, `mcp_bridge.mbt` | MCP 协议双向桥接 |
 | `rag` | `loader.mbt`, `splitter.mbt`, `store.mbt`, `embedder.mbt`, `retriever.mbt`, `boxed.mbt` | `Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` |
 | `cmd/chat` | `main.mbt` | 交互式 REPL（多轮对话、工具调用可视化） |
@@ -244,7 +245,7 @@ chain.invoke_stream(vars, fn(delta) {
 
 ### 测试覆盖
 
-76 个单元测试，三目标（native / wasm-gc / js）全绿：
+99 个单元测试，三目标（native / wasm-gc / js）全绿：
 
 | 测试文件 | 测试数 | 覆盖内容 |
 |---|---|---|
@@ -252,8 +253,9 @@ chain.invoke_stream(vars, fn(delta) {
 | `memory/buffer_memory_wbtest.mbt` | 5 | BufferMemory 存取/clear / BufferWindowMemory 窗口/副本 |
 | `memory/summary_memory_wbtest.mbt` | 5 | 摘要触发条件/load_messages/clear/保留最近消息 |
 | `parsers/parser_wbtest.mbt` | 7 | strip_code_fence / JsonOutputParser 含/不含围栏 / CRLF |
+| `tools/tool_wbtest.mbt` | 19 | CalculatorTool/DateTimeTool/ToolGuard/ToolMiddleware |
 | `chains/llm_chain_wbtest.mbt` | 7 | invoke/parse/stream/无parser/无效JSON/向后兼容 |
-| `agents/agent_executor_wbtest.mbt` | 4 | invoke/stream/parse/无parser |
+| `agents/agent_executor_wbtest.mbt` | 7 | invoke/stream/parse/无parser/invoke_tracked（3个） |
 | `core/core_wbtest.mbt` | 11 | pipe/map/SequentialChain/与wrapper组合 |
 | `observability/observability_wbtest.mbt` | 16 | UsageTracker/CallTrace/TimingTracker/ErrorLogger |
 | `rag/splitter_wbtest.mbt` | 10 | RecursiveCharacterTextSplitter/MarkdownLoader/VectorStore/MMR |
@@ -297,7 +299,7 @@ moon info                 # 更新生成接口文件
 - **ReAct Agent**: `AgentExecutor` — wraps `run_agent`, integrates memory, output_parser, max_steps, streaming
 - **Composable Units**: `RunnableWrapper[I,O]` — LCEL-style pipeline composition (`pipe`) / output transformation (`map`)
 - **Multi-chain Orchestration**: `SequentialChain[T]` — homogeneous multi-step chains, sequential execution with output passing
-- **Observability**: `UsageTracker` (token stats + cost), `CallTrace` (agent decision trail), `TimingTracker` (tool latency)
+- **Observability**: `UsageTracker` (token stats + cost), `CallTrace` (agent decision trail), `TimingTracker` (tool latency), `ErrorLogger` (structured error logging)
 - **RAG Retrieval**: `Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` + MMR diversity search
 - **Interactive CLI**: `cmd/chat` REPL — multi-turn conversations, tool call visualization, slash commands
 - **Unified Config**: `.env` / `config.json` / env vars — configure once, run anywhere
@@ -321,7 +323,7 @@ moon info                 # 更新生成接口文件
                    Your MoonBit Application
                           │
                     ┌─────┴─────┐
-                    │  moon-agent │  ← This library (11 sub-packages, 76 tests)
+                    │  moon-agent │  ← This library (11 sub-packages, 99 tests)
                     └─────┬─────┘
                           │
         ┌─────┬─────┬─────┼─────┬─────┬─────┬─────┐
@@ -381,6 +383,7 @@ REPL slash commands:
 | `/tools` | List built-in tools |
 | `/clear` | Clear conversation memory |
 | `/usage` | Show token usage & cost |
+| `/errors` | Show error log |
 
 ### Quickstart (5 minutes)
 
@@ -470,11 +473,11 @@ chain.invoke_stream(vars, fn(delta) {
 | `prompts` | `template.mbt`, `chat_prompt.mbt` | `PromptTemplate` (`{var}` interpolation) + `ChatPromptTemplate` (multi-role ordered messages) |
 | `parsers` | `parser.mbt`, `boxed_parser.mbt` | `OutputParser` trait + `JsonOutputParser` + `BoxedOutputParser` |
 | `memory` | `memory.mbt`, `buffer_memory.mbt`, `summary_memory.mbt`, `boxed_memory.mbt` | `Memory` trait + `BufferMemory` + `BufferWindowMemory` + `SummaryMemory` + `BoxedMemory` |
-| `tools` | `tool.mbt` + 9 built-in tool files | `Tool` trait + 6 built-in tools + middleware |
+| `tools` | `tool.mbt` + 10 built-in tool files | `Tool` trait + 6 built-in tools + middleware + RetrievalTool |
 | `chains` | `llm_chain.mbt` | `LLMChain` — prompt + provider + memory + output_parser + streaming |
 | `agents` | `agent_executor.mbt` | `AgentExecutor` — ReAct Agent loop + memory + output_parser + streaming |
 | `config` | `config.mbt` | `ChatConfig` — `.env` / `config.json` / env vars unified loading |
-| `observability` | `observability.mbt` | `UsageTracker` + `CallTrace` + `TimingTracker` |
+| `observability` | `observability.mbt` | `UsageTracker` + `CallTrace` + `TimingTracker` + `ErrorLogger` |
 | `mcp` | 4 files | MCP protocol bidirectional bridge |
 | `rag` | `loader.mbt`, `splitter.mbt`, `store.mbt`, `embedder.mbt`, `retriever.mbt`, `boxed.mbt` | `Document` + `MarkdownLoader` + `RecursiveCharacterTextSplitter` + `VectorStore` + `Embedder` + `Retriever` |
 | `cmd/chat` | `main.mbt` | Interactive REPL (multi-turn, tool visualization) |
@@ -483,7 +486,7 @@ chain.invoke_stream(vars, fn(delta) {
 
 ### Test Coverage
 
-76 unit tests, all green across three targets (native / wasm-gc / js):
+99 unit tests, all green across three targets (native / wasm-gc / js):
 
 | Test File | Tests | Coverage |
 |---|---|---|
@@ -491,8 +494,9 @@ chain.invoke_stream(vars, fn(delta) {
 | `memory/buffer_memory_wbtest.mbt` | 5 | BufferMemory save/load/clear / BufferWindowMemory window/copy |
 | `memory/summary_memory_wbtest.mbt` | 5 | Summary trigger conditions / load_messages / clear / recent message preservation |
 | `parsers/parser_wbtest.mbt` | 7 | strip_code_fence / JsonOutputParser with/without fence / CRLF |
+| `tools/tool_wbtest.mbt` | 19 | CalculatorTool / DateTimeTool / ToolGuard / ToolMiddleware |
 | `chains/llm_chain_wbtest.mbt` | 7 | invoke / parse / stream / no parser / invalid JSON / backward compat |
-| `agents/agent_executor_wbtest.mbt` | 4 | invoke / stream / parse / no parser |
+| `agents/agent_executor_wbtest.mbt` | 7 | invoke / stream / parse / no parser / invoke_tracked (3) |
 | `core/core_wbtest.mbt` | 11 | pipe / map / SequentialChain / wrapper composition |
 | `observability/observability_wbtest.mbt` | 16 | UsageTracker / CallTrace / TimingTracker / ErrorLogger |
 | `rag/splitter_wbtest.mbt` | 10 | RecursiveCharacterTextSplitter / MarkdownLoader / VectorStore / MMR |

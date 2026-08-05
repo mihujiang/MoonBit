@@ -62,6 +62,7 @@ MoonBit/
 │   ├── schema.mbt              # JSON Schema 辅助
 │   ├── tool_guard.mbt          # ToolGuard（白名单/黑名单）
 │   ├── tool_middleware.mbt     # 重试/超时中间件
+│   ├── retrieval_tool.mbt      # RetrievalTool（RAG 文档检索工具）
 │   └── moon.pkg
 ├── chains/                     # 链式编排
 │   ├── llm_chain.mbt           # LLMChain（prompt + provider + memory + parser + stream）
@@ -69,7 +70,7 @@ MoonBit/
 │   └── moon.pkg
 ├── agents/                     # ReAct Agent
 │   ├── agent_executor.mbt      # AgentExecutor（run_agent + memory + parser + stream）
-│   ├── agent_executor_wbtest.mbt  # 白盒测试: 4 tests
+│   ├── agent_executor_wbtest.mbt  # 白盒测试: 7 tests
 │   └── moon.pkg
 ├── config/                     # 统一配置（v0.9）
 │   ├── config.mbt              # ChatConfig + load_config

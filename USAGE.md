@@ -157,7 +157,7 @@ for chunk in chunks {
 | `chains` | `LLMChain` — prompt + provider + memory + parser 一条龙 |
 | `agents` | `AgentExecutor` — ReAct 循环 + 工具调用 |
 | `memory` | `BufferMemory` / `BufferWindowMemory` / `SummaryMemory` |
-| `tools` | `Tool` trait + 6 个内置工具（计算器、时间、HTTP、文件读写、命令执行） |
+| `tools` | `Tool` trait + 7 个内置工具（计算器、时间、HTTP、文件读写、命令执行、RAG检索） |
 | `parsers` | `JsonOutputParser` — 解析结构化 LLM 输出 |
 | `core` | `RunnableWrapper[I,O]` — LCEL 式可组合管道 |
 | `config` | `ChatConfig` — 统一配置（`.env` / `config.json` / 环境变量） |
@@ -175,6 +175,7 @@ for chunk in chunks {
 | `FileReadTool` | 读本地文件（可注入 read 回调） |
 | `FileWriteTool` | 写文件（可注入 write 回调） |
 | `ShellTool` | 执行命令（可注入 exec 回调，沙箱模式） |
+| `RetrievalTool` | RAG 文档检索（Embedder + VectorStore） |
 | `ToolGuard` | 白名单/黑名单过滤器 |
 | `ToolMiddleware` | 重试/超时包装器 |
 
@@ -189,7 +190,7 @@ for chunk in chunks {
 ```bash
 moon fmt --check          # 格式检查
 moon build --target js    # 构建
-moon test --target js     # 76 个单元测试
+moon test --target js     # 99 个单元测试
 ```
 
 三目标 CI：native / wasm-gc / js。
@@ -349,7 +350,7 @@ for chunk in chunks {
 | `chains` | `LLMChain` — prompt + provider + memory + parser in one call |
 | `agents` | `AgentExecutor` — ReAct loop with tool calling |
 | `memory` | `BufferMemory` / `BufferWindowMemory` / `SummaryMemory` |
-| `tools` | `Tool` trait + 6 built-in tools (calculator, datetime, http, file r/w, shell) |
+| `tools` | `Tool` trait + 7 built-in tools (calculator, datetime, http, file r/w, shell, RAG retrieval) |
 | `parsers` | `JsonOutputParser` — parse structured LLM output |
 | `core` | `RunnableWrapper[I,O]` — LCEL-style composable pipelines |
 | `config` | `ChatConfig` — unified config from `.env` / `config.json` / env vars |
@@ -367,6 +368,7 @@ for chunk in chunks {
 | `FileReadTool` | Read local files (injectable read callback) |
 | `FileWriteTool` | Write files (injectable write callback) |
 | `ShellTool` | Execute commands (injectable exec callback, sandboxed) |
+| `RetrievalTool` | RAG document search (Embedder + VectorStore) |
 | `ToolGuard` | Allowlist/denylist filter |
 | `ToolMiddleware` | Retry/timeout wrappers |
 
@@ -381,7 +383,7 @@ All executables share the same config — configure once, run anywhere.
 ```bash
 moon fmt --check          # format check
 moon build --target js    # build
-moon test --target js     # 76 unit tests
+moon test --target js     # 99 unit tests
 ```
 
 Three-target CI matrix: native / wasm-gc / js.

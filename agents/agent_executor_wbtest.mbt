@@ -134,3 +134,73 @@ test "AgentExecutor::invoke_and_parse returns Err without parser" {
   }
   assert_true(is_err)
 }
+
+///|
+test "AgentExecutor::invoke_tracked records usage" {
+  let usage_info = @llm.Usage::{ input_tokens: 100, output_tokens: 50 }
+  let mock = TestMockProvider::new([
+    [
+      @llm.StreamEvent::MessageStart,
+      @llm.StreamEvent::TextDelta("tracked response"),
+      @llm.StreamEvent::MessageEnd(
+        finish_reason=@llm.FinishReason::Stop,
+        usage=Some(usage_info),
+      ),
+    ],
+  ])
+  let registry = @llm_tools.ToolRegistry::new()
+  let executor = AgentExecutor::new(@llm.BoxedProvider::new(mock), registry)
+  let usage = @observability.UsageTracker::new()
+  let trace = @observability.CallTrace::new()
+  let logger = @observability.ErrorLogger::new()
+  let result = executor.invoke_tracked("hello", usage, trace, logger)
+  assert_eq(result, "tracked response")
+  inspect(usage.input_tokens(), content="100")
+  inspect(usage.output_tokens(), content="50")
+}
+
+///|
+test "AgentExecutor::invoke_tracked records trace steps" {
+  let mock = TestMockProvider::new([
+    [
+      @llm.StreamEvent::MessageStart,
+      @llm.StreamEvent::TextDelta("tracked text"),
+      @llm.StreamEvent::MessageEnd(
+        finish_reason=@llm.FinishReason::Stop,
+        usage=None,
+      ),
+    ],
+  ])
+  let registry = @llm_tools.ToolRegistry::new()
+  let executor = AgentExecutor::new(@llm.BoxedProvider::new(mock), registry)
+  let usage = @observability.UsageTracker::new()
+  let trace = @observability.CallTrace::new()
+  let logger = @observability.ErrorLogger::new()
+  let result = executor.invoke_tracked("query", usage, trace, logger)
+  assert_eq(result, "tracked text")
+  // One step for the text chunk
+  assert_true(trace.step_count() > 0)
+}
+
+///|
+test "AgentExecutor::invoke_tracked logs stream errors" {
+  let mock = TestMockProvider::new([
+    [
+      @llm.StreamEvent::MessageStart,
+      @llm.StreamEvent::Error("api timeout"),
+      @llm.StreamEvent::MessageEnd(
+        finish_reason=@llm.FinishReason::Stop,
+        usage=None,
+      ),
+    ],
+  ])
+  let registry = @llm_tools.ToolRegistry::new()
+  let executor = AgentExecutor::new(@llm.BoxedProvider::new(mock), registry)
+  let usage = @observability.UsageTracker::new()
+  let trace = @observability.CallTrace::new()
+  let logger = @observability.ErrorLogger::new()
+  let result = executor.invoke_tracked("test", usage, trace, logger)
+  assert_eq(result, "")
+  inspect(logger.total_errors(), content="1")
+  inspect(logger.count(ApiError), content="1")
+}

@@ -3,4 +3,5 @@ import {
   "mizchi/llm/tools" @llm_tools,
   "weopqrst/agent/memory",
   "weopqrst/agent/parsers",
+  "weopqrst/agent/observability",
 }
